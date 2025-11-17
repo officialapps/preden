@@ -293,7 +293,7 @@ const UserProfile = () => {
     }
 
     if (route === "about") {
-      window.open("https://www.preden.network", "_blank");
+      window.open("https://www.preden.app", "_blank");
       return;
     }
 
