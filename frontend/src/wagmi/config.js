@@ -1,13 +1,13 @@
 import { http, createConfig, fallback } from "wagmi";
-import { base } from "wagmi/chains";
+import { bscTestnet } from "wagmi/chains";
 import { injected, metaMask, walletConnect } from "wagmi/connectors";
 
 // Get your WalletConnect Project ID from https://cloud.walletconnect.com/
 const projectId = "b56e18d47c72ab683b10814fe9495694";
 
-// Enhanced RPC configuration for Base mainnet reliability
+// Enhanced RPC configuration for BSC Testnet reliability
 export const config = createConfig({
-  chains: [base],
+  chains: [bscTestnet],
   connectors: [
     injected(),
     metaMask(),
@@ -23,46 +23,33 @@ export const config = createConfig({
     }),
   ],
   transports: {
-    [base.id]: fallback([
-      // Primary: Use your premium RPC if available (Alchemy/Infura)
-      ...(import.meta.env.VITE_ALCHEMY_API_KEY 
-        ? [http(`https://base-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`, {
-            timeout: 8_000,
-            retryCount: 2,
-            retryDelay: ({ count }) => ~~(1 << count) * 200, // Exponential backoff: 200ms, 400ms, 800ms
-          })]
-        : []
-      ),
-      
-      // Secondary: Infura if available
-      ...(import.meta.env.VITE_INFURA_API_KEY 
-        ? [http(`https://base-mainnet.infura.io/v3/${import.meta.env.VITE_INFURA_API_KEY}`, {
-            timeout: 10_000,
-            retryCount: 2,
-            retryDelay: ({ count }) => ~~(1 << count) * 300,
-          })]
-        : []
-      ),
-      
-      // Tertiary: Official Base.org (most reliable for Base-specific operations)
-      http("https://mainnet.base.org", {
+    [bscTestnet.id]: fallback([
+      // Primary: Official BSC Testnet RPC
+      http("https://data-seed-prebsc-1-s1.bnbchain.org:8545", {
         timeout: 12_000,
         retryCount: 3,
         retryDelay: ({ count }) => ~~(1 << count) * 400,
       }),
       
-      // Quaternary: Backup public RPCs
-      http("https://base.llamarpc.com", {
+      // Secondary: Alternative BSC Testnet RPC
+      http("https://data-seed-prebsc-2-s1.bnbchain.org:8545", {
+        timeout: 12_000,
+        retryCount: 2,
+        retryDelay: ({ count }) => ~~(1 << count) * 400,
+      }),
+      
+      // Tertiary: Another BSC Testnet endpoint
+      http("https://bsc-testnet.publicnode.com", {
         timeout: 15_000,
         retryCount: 2,
         retryDelay: ({ count }) => ~~(1 << count) * 500,
       }),
       
-      // Last resort: Another public endpoint
-      http("https://base.blockpi.network/v1/rpc/public", {
-        timeout: 20_000,
-        retryCount: 1,
-        retryDelay: 1000,
+      // Quaternary: Backup public RPC
+      http("https://bsc-testnet-rpc.publicnode.com", {
+        timeout: 15_000,
+        retryCount: 2,
+        retryDelay: ({ count }) => ~~(1 << count) * 500,
       }),
     ], {
       rank: {
@@ -93,17 +80,17 @@ export const config = createConfig({
   cacheTime: 30_000,          // 30 second cache time
 });
 
-export const SUPPORTED_CHAIN_ID = base.id; // 8453
-export const SUPPORTED_CHAIN = base;
+export const SUPPORTED_CHAIN_ID = bscTestnet.id; // 97
+export const SUPPORTED_CHAIN = bscTestnet;
 
 // Network validation helper
 export const isValidNetwork = (chainId) => {
-  return chainId === base.id;
+  return chainId === bscTestnet.id;
 };
 
 // Get network name helper
 export const getNetworkName = (chainId) => {
-  return chainId === base.id ? "Base Mainnet" : "Unsupported Network";
+  return chainId === bscTestnet.id ? "BSC Testnet" : "Unsupported Network";
 };
 
 // Enhanced error handling helper
@@ -128,15 +115,9 @@ export const handleRpcError = (error) => {
 // RPC health check utility
 export const checkRpcHealth = async () => {
   const healthChecks = [
-    "https://mainnet.base.org",
-    ...(import.meta.env.VITE_ALCHEMY_API_KEY 
-      ? [`https://base-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`]
-      : []
-    ),
-    ...(import.meta.env.VITE_INFURA_API_KEY 
-      ? [`https://base-mainnet.infura.io/v3/${import.meta.env.VITE_INFURA_API_KEY}`]
-      : []
-    ),
+    "https://data-seed-prebsc-1-s1.bnbchain.org:8545",
+    "https://data-seed-prebsc-2-s1.bnbchain.org:8545",
+    "https://bsc-testnet.publicnode.com",
   ];
 
   const results = await Promise.allSettled(

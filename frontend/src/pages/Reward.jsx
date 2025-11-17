@@ -83,11 +83,11 @@ const Reward = () => {
             <h1 className="text-lg text-[#18DDF7] font-bold">REWARDS</h1>
             <img src={Medal} alt="" />
           </div>
-          <img
+          {/*<img
             src={Banner}
             alt="Rewards Banner"
             className="w-dvw object-cover"
-          />
+          />*/}
         </div>
 
         {/* Reward Cards */}

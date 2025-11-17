@@ -2,7 +2,7 @@
 import { createPublicClient, http } from 'viem'
 import { base } from 'viem/chains'
 
-const STAKING = "0x00a971e86D76C7a7374e42C952e31a1E6186A603"
+const STAKING = process.env.VITE_STAKING_ADDRESS || "0x00a971e86D76C7a7374e42C952e31a1E6186A603"
 
 const STIMPVP_ABI = [
   {

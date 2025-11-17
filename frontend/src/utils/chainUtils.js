@@ -1,10 +1,10 @@
 /**
- * Chain utilities for Base Mainnet only
+ * Chain utilities for BSC Testnet only
  * Simplified for single-chain support
  */
 
-// Base Mainnet chain ID
-export const BASE_MAINNET_CHAIN_ID = 8453;
+// BSC Testnet chain ID
+export const BASE_MAINNET_CHAIN_ID = 97;
 
 /**
  * Map chainId to chain name
@@ -12,13 +12,13 @@ export const BASE_MAINNET_CHAIN_ID = 8453;
  * @returns {string} - The human-readable chain name
  */
 export const getChainName = (chainId) => {
-  return chainId === BASE_MAINNET_CHAIN_ID ? "Base Mainnet" : "Unsupported Network";
+  return chainId === BASE_MAINNET_CHAIN_ID ? "BSC Testnet" : "Unsupported Network";
 };
 
 /**
  * Check if a chainId is supported by the application
  * @param {number} chainId - The blockchain network ID
- * @returns {boolean} - Whether the chain is supported (only Base Mainnet)
+ * @returns {boolean} - Whether the chain is supported (only Base Testnet)
  */
 export const isChainSupported = (chainId) => {
   return chainId === BASE_MAINNET_CHAIN_ID;
@@ -30,13 +30,13 @@ export const isChainSupported = (chainId) => {
  * @returns {string} - The block explorer URL
  */
 export const getExplorerUrl = (chainId) => {
-  return chainId === BASE_MAINNET_CHAIN_ID ? "https://basescan.org" : "";
+  return chainId === BASE_MAINNET_CHAIN_ID ? "https://testnet.bscscan.com" : "";
 };
 
 /**
  * Format transaction hash with explorer link
  * @param {string} txHash - Transaction hash
- * @param {number} chainId - The blockchain network ID (should be Base Mainnet)
+ * @param {number} chainId - The blockchain network ID (should be Base Testnet)
  * @returns {string} - Formatted transaction explorer URL
  */
 export const getTransactionUrl = (txHash, chainId) => {
@@ -47,7 +47,7 @@ export const getTransactionUrl = (txHash, chainId) => {
 /**
  * Format address with explorer link
  * @param {string} address - Wallet/contract address
- * @param {number} chainId - The blockchain network ID (should be Base Mainnet)
+ * @param {number} chainId - The blockchain network ID (should be Base Testnet)
  * @returns {string} - Formatted address explorer URL
  */
 export const getAddressUrl = (address, chainId) => {
@@ -56,16 +56,16 @@ export const getAddressUrl = (address, chainId) => {
 };
 
 /**
- * Get native currency symbol (ETH for Base Mainnet)
+ * Get native currency symbol (BNB for BSC Testnet)
  * @param {number} chainId - The blockchain network ID
  * @returns {string} - The native currency symbol
  */
 export const getNativeCurrencySymbol = (chainId) => {
-  return chainId === BASE_MAINNET_CHAIN_ID ? "ETH" : "ETH";
+  return chainId === BASE_MAINNET_CHAIN_ID ? "tBNB" : "tBNB";
 };
 
 /**
- * Get RPC URL for Base Mainnet
+ * Get RPC URL for BSC Testnet
  * @param {number} chainId - The blockchain network ID
  * @returns {string} - The RPC URL
  */
@@ -73,16 +73,16 @@ export const getRpcUrl = (chainId) => {
   if (chainId === BASE_MAINNET_CHAIN_ID) {
     // Use environment variable if available, otherwise fallback to public RPC
     return import.meta.env.VITE_ALCHEMY_API_KEY 
-      ? `https://base-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`
-      : "https://mainnet.base.org";
+      ? `https://bnb-testnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`
+      : "https://data-seed-prebsc-1-s1.bnbchain.org:8545";
   }
   return "";
 };
 
 /**
- * Validate if the current network is Base Mainnet
+ * Validate if the current network is BSC Testnet
  * @param {number} chainId - The blockchain network ID
- * @returns {boolean} - True if Base Mainnet, false otherwise
+ * @returns {boolean} - True if BSC Testnet, false otherwise
  */
 export const isBaseMainnet = (chainId) => {
   return chainId === BASE_MAINNET_CHAIN_ID;
@@ -95,22 +95,22 @@ export const isBaseMainnet = (chainId) => {
  */
 export const getNetworkStatus = (chainId) => {
   if (chainId === BASE_MAINNET_CHAIN_ID) {
-    return "Connected to Base Mainnet ✅";
+    return "Connected to BSC Testnet ✅";
   }
-  return `Unsupported network (Chain ID: ${chainId}). Please switch to Base Mainnet.`;
+  return `Unsupported network (Chain ID: ${chainId}). Please switch to BSC Testnet.`;
 };
 
 /**
  * Get network configuration object
- * @returns {object} - Base Mainnet configuration
+ * @returns {object} - BSC Testnet configuration
  */
 export const getNetworkConfig = () => {
   return {
     chainId: BASE_MAINNET_CHAIN_ID,
-    name: "Base Mainnet",
-    symbol: "ETH",
+    name: "BSC Testnet",
+    symbol: "tBNB",
     decimals: 18,
-    explorer: "https://basescan.org",
+    explorer: "https://testnet.bscscan.com",
     rpc: getRpcUrl(BASE_MAINNET_CHAIN_ID),
     isSupported: true
   };
@@ -119,10 +119,10 @@ export const getNetworkConfig = () => {
 // Export constants for easy access
 export const NETWORK_CONFIG = {
   CHAIN_ID: BASE_MAINNET_CHAIN_ID,
-  NAME: "Base Mainnet",
-  SYMBOL: "ETH",
+  NAME: "BSC Testnet",
+  SYMBOL: "tBNB",
   DECIMALS: 18,
-  EXPLORER: "https://basescan.org",
+  EXPLORER: "https://testnet.bscscan.com",
   RPC_URL: getRpcUrl(BASE_MAINNET_CHAIN_ID)
 };
 

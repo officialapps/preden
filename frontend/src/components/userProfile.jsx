@@ -26,7 +26,6 @@ import {
   getCurrentAvatar,
 } from "../utils/blockiesAvatar";
 
-
 import {
   useTwitterVerification,
   TwitterVerificationCard as ImportedTwitterVerificationCard,
@@ -52,7 +51,7 @@ const useWalletProfile = () => {
       return null;
     }
 
-    const profileKey = `stim_profile_${address}`;
+    const profileKey = `preden_profile_${address}`;
     const storedProfile = localStorage.getItem(profileKey);
 
     if (storedProfile) {
@@ -104,7 +103,7 @@ const useWalletProfile = () => {
     try {
       const timestamp = Date.now();
 
-      const updateMessage = `STIM Profile Update
+      const updateMessage = `Preden Profile Update
 
 Wallet: ${address}
 Timestamp: ${timestamp}
@@ -132,7 +131,7 @@ By signing this message, you confirm these profile updates and authenticate your
         avatar: newProfileData.avatar || generateWalletAvatar(address),
       };
 
-      const profileKey = `stim_profile_${address}`;
+      const profileKey = `preden_profile_${address}`;
       localStorage.setItem(profileKey, JSON.stringify(profileWithAuth));
 
       setProfileData(profileWithAuth);
@@ -164,7 +163,7 @@ By signing this message, you confirm these profile updates and authenticate your
       avatar: walletAvatar,
     };
 
-    const profileKey = `stim_profile_${address}`;
+    const profileKey = `preden_profile_${address}`;
     localStorage.setItem(profileKey, JSON.stringify(updatedProfile));
     setProfileData(updatedProfile);
 
@@ -178,7 +177,7 @@ By signing this message, you confirm these profile updates and authenticate your
   // Clear profile data
   const clearProfile = () => {
     if (address) {
-      localStorage.removeItem(`stim_profile_${address}`);
+      localStorage.removeItem(`preden_profile_${address}`);
     }
     setProfileData(null);
   };
@@ -294,7 +293,7 @@ const UserProfile = () => {
     }
 
     if (route === "about") {
-      window.open("https://www.stim.network", "_blank");
+      window.open("https://www.preden.network", "_blank");
       return;
     }
 
@@ -352,7 +351,7 @@ const UserProfile = () => {
   if (!isConnected) {
     return (
       <div className="min-h-screen bg-[#01052D] text-white flex items-center justify-center p-4">
-        <div className="max-w-7xl mx-auto text-center">
+        <div className="mx-auto text-center max-w-7xl">
           <div className="w-20 h-20 bg-[#18DDF7]/20 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg
               className="w-10 h-10 text-[#18DDF7]"
@@ -368,10 +367,10 @@ const UserProfile = () => {
               />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-4">
+          <h2 className="mb-4 text-2xl font-bold text-white">
             Connect Your Wallet
           </h2>
-          <p className="text-gray-400 mb-6">
+          <p className="mb-6 text-gray-400">
             Please connect your wallet to access your profile
           </p>
           <button
@@ -590,7 +589,7 @@ const UserProfile = () => {
             <img
               src={profileData?.avatar || generateWalletAvatar(address)}
               alt="user profile"
-              className="w-full h-full object-cover"
+              className="object-cover w-full h-full"
             />
           </div>
           <div className="text-center">
@@ -610,7 +609,7 @@ const UserProfile = () => {
           >
             Reset Default
           </button>
-          <div className="w-10 h-10 rounded-md flex items-center justify-center">
+          <div className="flex items-center justify-center w-10 h-10 rounded-md">
             <img src={image} alt="image" />
           </div>
         </div>
@@ -691,24 +690,24 @@ const UserProfile = () => {
   return (
     <div className="min-h-screen bg-[#01052D] text-white">
       <div
-        className="overflow-y-auto overflow-x-hidden"
+        className="overflow-x-hidden overflow-y-auto"
         style={{
           WebkitOverflowScrolling: "touch",
           overflowScrolling: "touch",
           scrollBehavior: "smooth",
         }}
       >
-        <div className="max-w-7xl mx-auto p-4 pb-20">
-          <div className="flex items-center space-x-2 mb-2">
+        <div className="p-4 pb-20 mx-auto max-w-7xl">
+          <div className="flex items-center mb-2 space-x-2">
             <h1 className="text-lg text-[#18DDF7] font-bold">MANAGE PROFILE</h1>
             <img src={gear} alt="gear" className="w-5 h-5" />
           </div>
 
           {/* Loading indicator */}
           {isLoading && (
-            <div className="mb-4 p-3 bg-blue-500/20 border border-blue-500/30 rounded-lg">
-              <p className="text-blue-300 text-sm flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+            <div className="p-3 mb-4 border rounded-lg bg-blue-500/20 border-blue-500/30">
+              <p className="flex items-center gap-2 text-sm text-blue-300">
+                <div className="w-4 h-4 border-2 border-blue-400 rounded-full border-t-transparent animate-spin"></div>
                 Saving profile changes...
               </p>
             </div>
@@ -753,7 +752,7 @@ const UserProfile = () => {
           {/* Wallet Info Section */}
           {profileData && (
             <div className="mt-6 p-4 bg-[#09113B] rounded-2xl border border-[#195281]">
-              <h3 className="text-white font-semibold mb-2">
+              <h3 className="mb-2 font-semibold text-white">
                 Wallet Information
               </h3>
               <div className="space-y-2 text-sm">
@@ -798,7 +797,7 @@ const UserProfile = () => {
           )}
           {/* Security Notice */}
           <div className="mt-6 p-4 bg-[#01052D] rounded-2xl border border-[#195281]/50">
-            <h3 className="text-white font-semibold mb-2 flex items-center gap-2">
+            <h3 className="flex items-center gap-2 mb-2 font-semibold text-white">
               <svg
                 className="w-5 h-5 text-[#18DDF7]"
                 fill="none"
@@ -814,7 +813,7 @@ const UserProfile = () => {
               </svg>
               Security & Privacy
             </h3>
-            <ul className="text-gray-400 text-xs space-y-1">
+            <ul className="space-y-1 text-xs text-gray-400">
               <li>
                 • Your profile picture is selected deterministically from
                 curated images
@@ -839,7 +838,7 @@ const UserProfile = () => {
 
           <ProfileItem
             icon={<img src={coin} alt="coin" />}
-            label="About STIM"
+            label="About Preden"
             value=""
             hasArrow={true}
             route="about"

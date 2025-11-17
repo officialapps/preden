@@ -35,7 +35,7 @@ const PoolCreatedSuccess = () => {
               <img src={Success} alt="Success" />
             </div>
             <div className="flex flex-col items-center">
-              <h2 className="text-2xl text-gray-100 font-semibold">
+              <h2 className="text-2xl font-semibold text-gray-100">
                 Pool Created
               </h2>
               <p className="text-lg text-gray-200">
@@ -48,11 +48,11 @@ const PoolCreatedSuccess = () => {
                 data={{
                   text: "Web Share - GfG",
                   url: "http://localhost:3000",
-                  title: "Stim PVP",
+                  title: "Preden PVP",
                 }}
                 onClick={() => console.log("shared successfully!")}
                 style={{
-                    background: "#000"
+                  background: "#000",
                 }}
               >
                 <button className="flex items-center justify-center gap-2 border border-[#18DDF7] text-white py-2 px-4 rounded-full w-40">

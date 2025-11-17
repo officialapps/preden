@@ -6,28 +6,28 @@ import {
   RainbowKitProvider,
 } from '@rainbow-me/rainbowkit';
 import { WagmiProvider } from 'wagmi';
-import { base } from 'wagmi/chains';
+import { bscTestnet } from 'wagmi/chains';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { http } from 'wagmi';
 
-// Configure wagmi with RainbowKit - MAINNET ONLY
+// Configure wagmi with RainbowKit - BSC TESTNET
 const config = getDefaultConfig({
   // Your dApp info
   appName: "Prediction & Staking Platform",
   appDescription: "Crypto Prediction & Staking Platform",
-  appUrl: "https://stimapp.com",
+  appUrl: "https://preden.app",
   appIcon: "https://yourapp.com/logo.png", // Replace with your actual icon
   
   // WalletConnect Project ID
   projectId: import.meta.env.VITE_REOWN_PROJECT_ID,
   
-  // Your dApp's chains - MAINNET ONLY
-  chains: [base],
+  // Your dApp's chains - BSC TESTNET
+  chains: [bscTestnet],
   
-  // Custom transports with your Alchemy keys - MAINNET ONLY
+  // Custom transports with your Alchemy keys - BSC TESTNET
   transports: {
-    [base.id]: http(
-      `https://base-mainnet.g.alchemy.com/v2/${import.meta.env.VITE_ALCHEMY_API_KEY}`,
+    [bscTestnet.id]: http(
+      `https://bsc-testnet.publicnode.com`,
     ),
   },
   
@@ -100,7 +100,7 @@ export const Web3Provider = ({ children }) => {
         <RainbowKitProvider 
           theme={myCustomTheme}
           modalSize="compact"
-          initialChain={base}
+          initialChain={bscTestnet}
         >
           {children}
         </RainbowKitProvider>

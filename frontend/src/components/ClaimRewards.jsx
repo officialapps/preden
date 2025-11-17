@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAccount, useBalance } from "wagmi";
-import { base } from "wagmi/chains";
+import { bscTestnet } from "wagmi/chains";
 import { useNotifications } from "./NotificationProvider";
-import { useClaimReward } from "../../hooks/staking/useClaimReward"; 
-import { ArrowLeft, Trophy, Clock, CheckCircle, AlertCircle } from "lucide-react";
+import { useClaimReward } from "../../hooks/staking/useClaimReward";
+import {
+  ArrowLeft,
+  Trophy,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
 import USDT from "../assets/images/pngs/usdt.png";
 
 // STIM token address
-const STIM_ADDRESS = "0x035d2026d6ab320150F9B0456D426D5CDdF8423F";
+const USDT_ADDRESS = import.meta.env.VITE_USDT_ADDRESS;
 
 const ClaimRewardsPage = () => {
   const navigate = useNavigate();
@@ -19,23 +25,23 @@ const ClaimRewardsPage = () => {
   // Get current STIM balance
   const { data: stimBalanceData, refetch: refetchBalance } = useBalance({
     address: address,
-    token: STIM_ADDRESS,
-    chainId: base.id,
+    token: USDT_ADDRESS,
+    chainId: bscTestnet.id,
     enabled: !!address,
   });
 
   // Filter notifications to get winning, losing, and claimed notifications
-  const winningNotifications = notifications.filter(notification => 
-    notification.userWon && !notification.claimed
+  const winningNotifications = notifications.filter(
+    (notification) => notification.userWon && !notification.claimed
   );
 
-  const claimedNotifications = notifications.filter(notification => 
-    notification.userWon && notification.claimed
+  const claimedNotifications = notifications.filter(
+    (notification) => notification.userWon && notification.claimed
   );
 
   // Get all losing notifications to show in history
-  const losingNotifications = notifications.filter(notification => 
-    !notification.userWon
+  const losingNotifications = notifications.filter(
+    (notification) => !notification.userWon
   );
 
   // Initialize claim reward hook for each notification
@@ -47,7 +53,7 @@ const ClaimRewardsPage = () => {
       if (refetchBalance) {
         setTimeout(() => refetchBalance(), 2000);
       }
-    }
+    },
   });
 
   const handleClaimReward = async (notification) => {
@@ -59,11 +65,11 @@ const ClaimRewardsPage = () => {
     // Navigate to appropriate page based on whether user won or lost
     if (notification.userWon) {
       navigate("/prediction-win", {
-        state: { notification }
+        state: { notification },
       });
     } else {
       navigate("/prediction-loss", {
-        state: { notification }
+        state: { notification },
       });
     }
   };
@@ -74,13 +80,17 @@ const ClaimRewardsPage = () => {
   };
 
   const RewardCard = ({ notification, type = "claimable" }) => (
-    <div className="p-[2px] rounded-2xl mb-4" style={{
-      background: type === "claimable" 
-        ? "linear-gradient(135deg, #27FE60, #18DDF7)" 
-        : type === "claimed"
-        ? "linear-gradient(135deg, #195281, #09113B)"
-        : "linear-gradient(135deg, #FF4444, #AA2222)", // Red gradient for losses
-    }}>
+    <div
+      className="p-[2px] rounded-2xl mb-4"
+      style={{
+        background:
+          type === "claimable"
+            ? "linear-gradient(135deg, #27FE60, #18DDF7)"
+            : type === "claimed"
+            ? "linear-gradient(135deg, #195281, #09113B)"
+            : "linear-gradient(135deg, #FF4444, #AA2222)", // Red gradient for losses
+      }}
+    >
       <div className="bg-[#09113B] rounded-2xl p-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
@@ -92,34 +102,51 @@ const ClaimRewardsPage = () => {
             ) : (
               <AlertCircle className="w-5 h-5 text-red-400" />
             )}
-            <span className={`text-sm font-semibold ${
-              type === "claimable" ? "text-[#27FE60]" : 
-              type === "claimed" ? "text-green-400" : "text-red-400"
-            }`}>
-              {type === "claimable" ? "Ready to Claim" : 
-               type === "claimed" ? "Already Claimed" : "Lost Prediction"}
+            <span
+              className={`text-sm font-semibold ${
+                type === "claimable"
+                  ? "text-[#27FE60]"
+                  : type === "claimed"
+                  ? "text-green-400"
+                  : "text-red-400"
+              }`}
+            >
+              {type === "claimable"
+                ? "Ready to Claim"
+                : type === "claimed"
+                ? "Already Claimed"
+                : "Lost Prediction"}
             </span>
           </div>
           <div className="flex items-center gap-1">
             <img src={USDT} alt="USDT" className="w-4 h-4" />
-            <span className={`font-semibold ${
-              type === "lost" ? "text-red-400" : "text-white"
-            }`}>
-              {type === "lost" ? `-${notification.userStake}` : `${notification.potentialWinnings}`}
+            <span
+              className={`font-semibold ${
+                type === "lost" ? "text-red-400" : "text-white"
+              }`}
+            >
+              {type === "lost"
+                ? `-${notification.userStake}`
+                : `${notification.potentialWinnings}`}
             </span>
           </div>
         </div>
 
         {/* Event Details */}
         <div className="mb-3">
-          <h3 className="text-white text-sm font-medium mb-1 line-clamp-2">
+          <h3 className="mb-1 text-sm font-medium text-white line-clamp-2">
             {notification.eventDetails?.question || "Prediction Event"}
           </h3>
-          <p className="text-gray-400 text-xs">
-            Your bet: {notification.eventDetails?.userBetOption === 1 ? "Yes" : "No"} • 
+          <p className="text-xs text-gray-400">
+            Your bet:{" "}
+            {notification.eventDetails?.userBetOption === 1 ? "Yes" : "No"} •
             Stake: ${notification.userStake}
             {type === "lost" && (
-              <span className="text-red-400"> • Result: {notification.eventDetails?.result || "Opposite outcome"}</span>
+              <span className="text-red-400">
+                {" "}
+                • Result:{" "}
+                {notification.eventDetails?.result || "Opposite outcome"}
+              </span>
             )}
           </p>
         </div>
@@ -127,10 +154,10 @@ const ClaimRewardsPage = () => {
         {/* Event Image */}
         {notification.eventDetails?.eventImage && (
           <div className="mb-3">
-            <img 
-              src={notification.eventDetails.eventImage} 
-              alt="Event" 
-              className="w-full h-24 object-cover rounded-lg"
+            <img
+              src={notification.eventDetails.eventImage}
+              alt="Event"
+              className="object-cover w-full h-24 rounded-lg"
             />
           </div>
         )}
@@ -141,10 +168,14 @@ const ClaimRewardsPage = () => {
             <>
               <button
                 onClick={() => handleClaimReward(notification)}
-                disabled={isClaiming && claimingEventId === notification.eventAddress}
+                disabled={
+                  isClaiming && claimingEventId === notification.eventAddress
+                }
                 className="flex-1 py-2 px-4 bg-[#27FE60] text-black rounded-full font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isClaiming && claimingEventId === notification.eventAddress ? "Claiming..." : "Claim Reward"}
+                {isClaiming && claimingEventId === notification.eventAddress
+                  ? "Claiming..."
+                  : "Claim Reward"}
               </button>
               <button
                 onClick={() => handleViewResult(notification)}
@@ -157,8 +188,8 @@ const ClaimRewardsPage = () => {
             <button
               onClick={() => handleViewResult(notification)}
               className={`flex-1 py-2 px-4 rounded-full font-semibold ${
-                type === "lost" 
-                  ? "bg-red-600 text-white hover:bg-red-700" 
+                type === "lost"
+                  ? "bg-red-600 text-white hover:bg-red-700"
                   : "bg-gray-600 text-white hover:bg-gray-700"
               }`}
             >
@@ -171,7 +202,7 @@ const ClaimRewardsPage = () => {
   );
 
   const EmptyState = ({ type }) => (
-    <div className="text-center py-8">
+    <div className="py-8 text-center">
       <div className="w-16 h-16 bg-[#01052D] rounded-full flex items-center justify-center mx-auto mb-4">
         {type === "claimable" ? (
           <Trophy className="w-8 h-8 text-gray-400" />
@@ -179,14 +210,13 @@ const ClaimRewardsPage = () => {
           <CheckCircle className="w-8 h-8 text-gray-400" />
         )}
       </div>
-      <h3 className="text-white text-lg font-semibold mb-2">
+      <h3 className="mb-2 text-lg font-semibold text-white">
         {type === "claimable" ? "No Rewards to Claim" : "No Claimed Rewards"}
       </h3>
-      <p className="text-gray-400 text-sm">
-        {type === "claimable" 
-          ? "When you win predictions, your rewards will appear here" 
-          : "Your claimed rewards history will appear here"
-        }
+      <p className="text-sm text-gray-400">
+        {type === "claimable"
+          ? "When you win predictions, your rewards will appear here"
+          : "Your claimed rewards history will appear here"}
       </p>
     </div>
   );
@@ -203,7 +233,9 @@ const ClaimRewardsPage = () => {
         </button>
         <div>
           <h1 className="text-lg font-bold text-[#18DDF7]">CLAIM REWARDS</h1>
-          <p className="text-sm text-gray-400">Manage your prediction winnings</p>
+          <p className="text-sm text-gray-400">
+            Manage your prediction winnings
+          </p>
         </div>
       </div>
 
@@ -211,11 +243,11 @@ const ClaimRewardsPage = () => {
       {address && stimBalanceData && (
         <div className="p-4">
           <div className="bg-gradient-to-r from-[#09113B] to-[#192EA1] rounded-2xl p-4">
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-400 text-sm">Current Balance</p>
-                <p className="text-white text-2xl font-bold">
-                  {formatBalance(stimBalanceData)} STIM
+                <p className="text-sm text-gray-400">Current Balance</p>
+                <p className="text-2xl font-bold text-white">
+                  {formatBalance(stimBalanceData)} USDT
                 </p>
               </div>
               <div className="w-12 h-12 bg-[#01052D] rounded-full flex items-center justify-center">
@@ -231,7 +263,7 @@ const ClaimRewardsPage = () => {
         {/* Claimable Rewards Section */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-white text-lg font-semibold">
+            <h2 className="text-lg font-semibold text-white">
               Available to Claim ({winningNotifications.length})
             </h2>
             {winningNotifications.length > 0 && (
@@ -244,10 +276,10 @@ const ClaimRewardsPage = () => {
 
           {winningNotifications.length > 0 ? (
             winningNotifications.map((notification, index) => (
-              <RewardCard 
-                key={`claimable-${notification.eventAddress}-${index}`} 
-                notification={notification} 
-                type="claimable" 
+              <RewardCard
+                key={`claimable-${notification.eventAddress}-${index}`}
+                notification={notification}
+                type="claimable"
               />
             ))
           ) : (
@@ -257,18 +289,20 @@ const ClaimRewardsPage = () => {
 
         {/* Claimed Rewards Section */}
         <div className="mb-6">
-          <h2 className="text-white text-lg font-semibold mb-4">
+          <h2 className="mb-4 text-lg font-semibold text-white">
             Claimed Rewards ({claimedNotifications.length})
           </h2>
 
           {claimedNotifications.length > 0 ? (
-            claimedNotifications.slice(0, 5).map((notification, index) => (
-              <RewardCard 
-                key={`claimed-${notification.eventAddress}-${index}`} 
-                notification={notification} 
-                type="claimed" 
-              />
-            ))
+            claimedNotifications
+              .slice(0, 5)
+              .map((notification, index) => (
+                <RewardCard
+                  key={`claimed-${notification.eventAddress}-${index}`}
+                  notification={notification}
+                  type="claimed"
+                />
+              ))
           ) : (
             <EmptyState type="claimed" />
           )}
@@ -276,27 +310,29 @@ const ClaimRewardsPage = () => {
 
         {/* Lost Predictions Section */}
         <div>
-          <h2 className="text-white text-lg font-semibold mb-4">
+          <h2 className="mb-4 text-lg font-semibold text-white">
             Lost Predictions ({losingNotifications.length})
           </h2>
 
           {losingNotifications.length > 0 ? (
-            losingNotifications.slice(0, 5).map((notification, index) => (
-              <RewardCard 
-                key={`lost-${notification.eventAddress}-${index}`} 
-                notification={notification} 
-                type="lost" 
-              />
-            ))
+            losingNotifications
+              .slice(0, 5)
+              .map((notification, index) => (
+                <RewardCard
+                  key={`lost-${notification.eventAddress}-${index}`}
+                  notification={notification}
+                  type="lost"
+                />
+              ))
           ) : (
-            <div className="text-center py-8">
+            <div className="py-8 text-center">
               <div className="w-16 h-16 bg-[#01052D] rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="w-8 h-8 text-gray-400" />
               </div>
-              <h3 className="text-white text-lg font-semibold mb-2">
+              <h3 className="mb-2 text-lg font-semibold text-white">
                 No Lost Predictions
               </h3>
-              <p className="text-gray-400 text-sm">
+              <p className="text-sm text-gray-400">
                 You haven't lost any predictions yet. Keep up the good work!
               </p>
             </div>
@@ -308,13 +344,14 @@ const ClaimRewardsPage = () => {
           <div className="flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-[#18DDF7] mt-0.5" />
             <div>
-              <h3 className="text-white text-sm font-semibold mb-1">
+              <h3 className="mb-1 text-sm font-semibold text-white">
                 Important Information
               </h3>
-              <p className="text-gray-400 text-xs leading-relaxed">
-                • Rewards must be claimed within the deadline period<br/>
-                • Gas fees apply for claiming transactions<br/>
-                • Claimed rewards are added to your STIM balance
+              <p className="text-xs leading-relaxed text-gray-400">
+                • Rewards must be claimed within the deadline period
+                <br />
+                • Gas fees apply for claiming transactions
+                <br />• Claimed rewards are added to your PREDEN balance
               </p>
             </div>
           </div>

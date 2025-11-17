@@ -11,7 +11,6 @@ import { RWebShare } from "react-web-share";
 
 import PredictionCard from "../../components/ui/PredictionCard";
 
-
 const Prediction = () => {
   const [stake, setStake] = useState(1);
   const navigate = useNavigate();
@@ -30,11 +29,11 @@ const Prediction = () => {
   };
 
   const handleBetYes = () => {
-    navigate('/prediction', { state: { betOption: 'yes' } });
+    navigate("/prediction", { state: { betOption: "yes" } });
   };
 
   const handleBetNo = () => {
-    navigate('/prediction', { state: { betOption: 'no' } });
+    navigate("/prediction", { state: { betOption: "no" } });
   };
 
   const predictions = [
@@ -80,7 +79,7 @@ const Prediction = () => {
                     className="w-8 h-8 rounded-sm bg-[#01052D]"
                   />
                   <div className="flex-1">
-                    <h3 className="font-semibold mb-1 text-white">
+                    <h3 className="mb-1 font-semibold text-white">
                       {prediction.question}
                     </h3>
                   </div>
@@ -89,37 +88,42 @@ const Prediction = () => {
                 {/* Bet Yes and Bet No Buttons */}
                 <div className="flex gap-4 mb-4">
                   {/* Bet Yes Button */}
-                  <button className="flex-1 bg-[#18DDF71A] text-[#18DDF7] py-2 rounded-full border border-[#18DDF7] flex items-center justify-center gap-2 transition-colors" onClick={handleBetYes}>
+                  <button
+                    className="flex-1 bg-[#18DDF71A] text-[#18DDF7] py-2 rounded-full border border-[#18DDF7] flex items-center justify-center gap-2 transition-colors"
+                    onClick={handleBetYes}
+                  >
                     Bet Yes
                     <img src={Up} alt="Yes icon" className="w-4 h-4" />
                   </button>
 
                   {/* Bet No Button */}
-                  <button className="flex-1 bg-[#FF5A5A1A] text-[#FF5A5A] py-2 rounded-full border border-[#FF5A5A] flex items-center justify-center gap-2 transition-colors" onClick={handleBetNo}>
+                  <button
+                    className="flex-1 bg-[#FF5A5A1A] text-[#FF5A5A] py-2 rounded-full border border-[#FF5A5A] flex items-center justify-center gap-2 transition-colors"
+                    onClick={handleBetNo}
+                  >
                     Bet No
                     <img src={Down} alt="No icon" className="w-4 h-4" />
                   </button>
                 </div>
 
                 <div className="flex items-center justify-center text-sm text-gray-400">
-                 
                   <div className="flex items-center justify-center gap-4">
                     <span>{prediction.timeLeft}</span>
                     <RWebShare
-                data={{
-                  text: "Web Share - GfG",
-                  url: "http://localhost:3000",
-                  title: "Stim PVP",
-                }}
-                onClick={() => console.log("shared successfully!")}
-                style={{
-                    background: "#000"
-                }}
-              >
-                <button className="flex items-center justify-center">
-                  <img src={Share} alt="share icon w-4 h-4" />
-                </button>
-              </RWebShare>
+                      data={{
+                        text: "Web Share - GfG",
+                        url: "http://localhost:3000",
+                        title: "Preden PVP",
+                      }}
+                      onClick={() => console.log("shared successfully!")}
+                      style={{
+                        background: "#000",
+                      }}
+                    >
+                      <button className="flex items-center justify-center">
+                        <img src={Share} alt="share icon w-4 h-4" />
+                      </button>
+                    </RWebShare>
                   </div>
                 </div>
               </div>
@@ -127,7 +131,7 @@ const Prediction = () => {
           ))}
         {/* Stake Information */}
         <div className="mb-4">
-          <label className="text-gray-400 text-sm mb-2 block">Stake</label>
+          <label className="block mb-2 text-sm text-gray-400">Stake</label>
           <div className="relative">
             <input
               type="number"
@@ -140,16 +144,16 @@ const Prediction = () => {
             <img
               src={USDT}
               alt="USDT token"
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5"
+              className="absolute w-5 h-5 transform -translate-y-1/2 right-3 top-1/2"
             />
           </div>
 
           {/* Amounts */}
-          <ul className="flex items-center justify-center text-lg mt-3 space-x-5">
+          <ul className="flex items-center justify-center mt-3 space-x-5 text-lg">
             {[1, 5, 10, 20, 50, 100].map((amount) => (
               <li
                 key={amount}
-                className="flex gap-2 items-center cursor-pointer hover:opacity-80"
+                className="flex items-center gap-2 cursor-pointer hover:opacity-80"
                 onClick={() => handleSelectStake(amount)}
               >
                 <img src={USDT} alt="USDT Token" className="w-5 h-5" />
@@ -158,7 +162,7 @@ const Prediction = () => {
             ))}
           </ul>
         </div>
-        
+
         {/* Continue Button */}
         <button
           className={`w-full py-4 rounded-full font-semibold ${

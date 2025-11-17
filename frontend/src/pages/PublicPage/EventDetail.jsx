@@ -1,152 +1,152 @@
-import { useState, useEffect } from "react"
-import { useParams, useNavigate } from "react-router-dom"
-import { HiQuestionMarkCircle } from "react-icons/hi"
-import { RWebShare } from "react-web-share"
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { HiQuestionMarkCircle } from "react-icons/hi";
+import { RWebShare } from "react-web-share";
 
 // Import your existing components and utilities
-import { CategoryIcon } from "../../utils/categoryIcons"
-import useEventsData from "../../../hooks/staking/useEventBetting"
+import { CategoryIcon } from "../../utils/categoryIcons";
+import useEventsData from "../../../hooks/staking/useEventBetting";
 
 // Import your assets
-import Up from "../../assets/images/svgs/up.svg"
-import Down from "../../assets/images/svgs/down.svg"
-import Share from "../../assets/images/svgs/share.svg"
-import Flames from "../../assets/images/svgs/flames.svg"
-import USDC from "../../assets/images/svgs/USDC.svg"
-import STIM from "../../assets/images/svgs/stim-coin.svg"
+import Up from "../../assets/images/svgs/up.svg";
+import Down from "../../assets/images/svgs/down.svg";
+import Share from "../../assets/images/svgs/share.svg";
+import Flames from "../../assets/images/svgs/flames.svg";
+import USDC from "../../assets/images/svgs/USDC.svg";
+import USDT from "../../assets/images/svgs/USDT.svg";
 
-// Import token configs from your Home component
+// Token configuration
 const TOKEN_CONFIG = {
-  "0x035d2026d6ab320150f9b0456d426d5cddf8423f": {
-    name: "STIM",
-    symbol: "STIM",
+  [import.meta.env.VITE_USDT_ADDRESS]: {
+    name: "USDT",
+    symbol: "USDT",
     decimals: 18,
-    icon: STIM
+    icon: USDT,
   },
-  "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913": {
+  [import.meta.env.VITE_USDC_ADDRESS]: {
     name: "USDC",
-    symbol: "USDC", 
-    decimals: 6,
-    icon: USDC
-  }
-}
+    symbol: "USDC",
+    decimals: 18,
+    icon: USDC,
+  },
+};
 
 const EventDetail = () => {
-  const { eventAddress } = useParams()
-  const navigate = useNavigate()
-  const [eventData, setEventData] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
-  const [showModal, setShowModal] = useState(false)
+  const { eventAddress } = useParams();
+  const navigate = useNavigate();
+  const [eventData, setEventData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [showModal, setShowModal] = useState(false);
 
   // Use your existing hook to get events data
-  const { eventsData, isLoading: eventsLoading } = useEventsData()
+  const { eventsData, isLoading: eventsLoading } = useEventsData();
 
   // Find the specific event when data is loaded
   useEffect(() => {
     if (!eventsLoading && eventsData && eventsData.length > 0) {
-      const foundEvent = eventsData.find(event => 
-        event.address.toLowerCase() === eventAddress.toLowerCase()
-      )
-      
+      const foundEvent = eventsData.find(
+        (event) => event.address.toLowerCase() === eventAddress.toLowerCase()
+      );
+
       if (foundEvent) {
-        setEventData(foundEvent)
-        setError("")
+        setEventData(foundEvent);
+        setError("");
       } else {
-        setError("Event not found or may have expired")
+        setError("Event not found or may have expired");
       }
-      setLoading(false)
+      setLoading(false);
     }
-  }, [eventsData, eventsLoading, eventAddress])
+  }, [eventsData, eventsLoading, eventAddress]);
 
   // Helper functions (copied from your Home component)
   const getTokenIcon = (tokenAddress) => {
-    if (!tokenAddress) return "/default-token-icon" // Update with your default icon path
-    
-    const normalizedAddress = tokenAddress.toLowerCase()
-    const config = TOKEN_CONFIG[normalizedAddress]
+    if (!tokenAddress) return "/default-token-icon"; // Update with your default icon path
+
+    const normalizedAddress = tokenAddress.toLowerCase();
+    const config = TOKEN_CONFIG[normalizedAddress];
     if (config) {
-      return config.icon
+      return config.icon;
     }
-    
-    return "/default-token-icon" // Default fallback
-  }
+
+    return "/default-token-icon"; // Default fallback
+  };
 
   const getTokenSymbol = (tokenAddress) => {
-    if (!tokenAddress) return "STIM"
-    
-    const normalizedAddress = tokenAddress.toLowerCase()
-    const config = TOKEN_CONFIG[normalizedAddress]
-    
-    return config ? config.symbol : "STIM"
-  }
+    const normalizedAddress = tokenAddress.toLowerCase();
+    const config = TOKEN_CONFIG[normalizedAddress];
+
+    return config ?? config.symbol;
+  };
 
   const getTokenDecimals = (tokenAddress) => {
-    if (!tokenAddress) return 18
-    
-    const normalizedAddress = tokenAddress.toLowerCase()
-    const config = TOKEN_CONFIG[normalizedAddress]
-    
-    return config ? config.decimals : 18
-  }
+    if (!tokenAddress) return 18;
+
+    const normalizedAddress = tokenAddress.toLowerCase();
+    const config = TOKEN_CONFIG[normalizedAddress];
+
+    return config ? config.decimals : 18;
+  };
 
   const formatVolume = (volume, tokenAddress) => {
     try {
-      if (!volume) return "0"
-      
-      const decimals = getTokenDecimals(tokenAddress)
-      const volumeStr = volume.toString()
-      let actualVolume
-      
-      if (volumeStr.includes('.')) {
-        actualVolume = parseFloat(volumeStr)
+      if (!volume) return "0";
+
+      const decimals = getTokenDecimals(tokenAddress);
+      const volumeStr = volume.toString();
+      let actualVolume;
+
+      if (volumeStr.includes(".")) {
+        actualVolume = parseFloat(volumeStr);
       } else {
-        actualVolume = Number(volumeStr) / Math.pow(10, decimals)
+        actualVolume = Number(volumeStr) / Math.pow(10, decimals);
       }
 
       if (actualVolume >= 1000000) {
-        return `${(actualVolume / 1000000).toFixed(2)}M`
+        return `${(actualVolume / 1000000).toFixed(2)}M`;
       } else if (actualVolume >= 1) {
-        return actualVolume.toFixed(2)
+        return actualVolume.toFixed(2);
       } else if (actualVolume >= 0.01) {
-        return actualVolume.toFixed(2)
+        return actualVolume.toFixed(2);
       } else if (actualVolume > 0) {
-        return parseFloat(actualVolume.toFixed(6)).toString()
+        return parseFloat(actualVolume.toFixed(6)).toString();
       } else {
-        return "0"
+        return "0";
       }
     } catch (error) {
-      console.error("Error formatting volume:", error)
-      return "0"
+      console.error("Error formatting volume:", error);
+      return "0";
     }
-  }
+  };
 
   const formatTimeRemaining = (endTimeString) => {
     try {
-      const now = new Date()
-      const endTime = new Date(endTimeString)
-      const timeLeft = endTime - now
-      
-      if (timeLeft <= 0) return "Ended"
-      
-      const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24))
-      const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-      const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60))
-      
+      const now = new Date();
+      const endTime = new Date(endTimeString);
+      const timeLeft = endTime - now;
+
+      if (timeLeft <= 0) return "Ended";
+
+      const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+      const hours = Math.floor(
+        (timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      );
+      const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+
       if (days > 0) {
-        return `${days}d ${hours}h`
+        return `${days}d ${hours}h`;
       } else if (hours > 0) {
-        return `${hours}h ${minutes}m`
+        return `${hours}h ${minutes}m`;
       } else if (minutes > 0) {
-        return `${minutes}m`
+        return `${minutes}m`;
       } else {
-        return "< 1m"
+        return "< 1m";
       }
     } catch (error) {
-      console.error("Error formatting time:", error)
-      return "Invalid time"
+      console.error("Error formatting time:", error);
+      return "Invalid time";
     }
-  }
+  };
 
   const handleBetYes = () => {
     navigate("/prediction", {
@@ -165,8 +165,8 @@ const EventDetail = () => {
         question: eventData.question,
         options: eventData.options,
       },
-    })
-  }
+    });
+  };
 
   const handleBetNo = () => {
     navigate("/prediction", {
@@ -185,41 +185,53 @@ const EventDetail = () => {
         question: eventData.question,
         options: eventData.options,
       },
-    })
-  }
+    });
+  };
 
   if (loading || eventsLoading) {
     return (
-      <div className="relative p-4 md:p-6 lg:p-8 min-h-screen">
-        <div className="fixed inset-0 w-full h-full -z-10 pointer-events-none">
-          <img src={Flames || "/placeholder.svg"} alt="background" className="w-full h-full object-cover" />
+      <div className="relative min-h-screen p-4 md:p-6 lg:p-8">
+        <div className="fixed inset-0 w-full h-full pointer-events-none -z-10">
+          <img
+            src={Flames || "/placeholder.svg"}
+            alt="background"
+            className="object-cover w-full h-full"
+          />
         </div>
         <div className="relative z-10 max-w-screen-xl mx-auto">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="flex flex-col items-center gap-4">
-              <div className="h-12 w-12 animate-spin rounded-full border-4 border-cyan-400 border-t-transparent"></div>
-              <p className="text-white text-lg">Loading event...</p>
+              <div className="w-12 h-12 border-4 rounded-full animate-spin border-cyan-400 border-t-transparent"></div>
+              <p className="text-lg text-white">Loading event...</p>
             </div>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (error || !eventData) {
     return (
-      <div className="relative p-4 md:p-6 lg:p-8 min-h-screen">
-        <div className="fixed inset-0 w-full h-full -z-10 pointer-events-none">
-          <img src={Flames || "/placeholder.svg"} alt="background" className="w-full h-full object-cover" />
+      <div className="relative min-h-screen p-4 md:p-6 lg:p-8">
+        <div className="fixed inset-0 w-full h-full pointer-events-none -z-10">
+          <img
+            src={Flames || "/placeholder.svg"}
+            alt="background"
+            className="object-cover w-full h-full"
+          />
         </div>
         <div className="relative z-10 max-w-screen-xl mx-auto">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
-              <h2 className="text-2xl font-bold text-white mb-4">Event Not Found</h2>
-              <p className="text-gray-400 mb-6">{error || "This event may have been removed or expired."}</p>
+              <h2 className="mb-4 text-2xl font-bold text-white">
+                Event Not Found
+              </h2>
+              <p className="mb-6 text-gray-400">
+                {error || "This event may have been removed or expired."}
+              </p>
               <button
                 onClick={() => navigate("/predict")}
-                className="px-6 py-3 bg-cyan-500 text-white rounded-lg hover:bg-cyan-400 transition-colors"
+                className="px-6 py-3 text-white transition-colors rounded-lg bg-cyan-500 hover:bg-cyan-400"
               >
                 Back to Events
               </button>
@@ -227,14 +239,18 @@ const EventDetail = () => {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="relative p-4 md:p-6 lg:p-8 min-h-screen">
+    <div className="relative min-h-screen p-4 md:p-6 lg:p-8">
       {/* Background */}
-      <div className="fixed inset-0 w-full h-full -z-10 pointer-events-none">
-        <img src={Flames || "/placeholder.svg"} alt="background" className="w-full h-full object-cover" />
+      <div className="fixed inset-0 w-full h-full pointer-events-none -z-10">
+        <img
+          src={Flames || "/placeholder.svg"}
+          alt="background"
+          className="object-cover w-full h-full"
+        />
       </div>
 
       <div className="relative z-10 max-w-screen-xl mx-auto">
@@ -243,7 +259,7 @@ const EventDetail = () => {
           <div className="mb-6">
             <button
               onClick={() => navigate("/predict")}
-              className="text-cyan-400 hover:text-cyan-300 transition-colors"
+              className="transition-colors text-cyan-400 hover:text-cyan-300"
             >
               ← Back to Events
             </button>
@@ -261,18 +277,18 @@ const EventDetail = () => {
                 <div className="flex items-start gap-4 mb-4">
                   {/* Category Icon */}
                   <div className="w-10 h-10 rounded-sm bg-[#01052D] flex items-center justify-center text-[#18DDF7] flex-shrink-0">
-                    <CategoryIcon 
+                    <CategoryIcon
                       categoryName={eventData.category?.name}
                       categoryLabel={eventData.category?.label}
                       className="w-6 h-6"
                     />
                   </div>
                   <div className="flex-1">
-                    <h1 className="font-bold text-white text-xl md:text-2xl leading-tight mb-2">
+                    <h1 className="mb-2 text-xl font-bold leading-tight text-white md:text-2xl">
                       {eventData.question}
                     </h1>
                     {eventData.description && (
-                      <p className="text-gray-300 text-sm md:text-base">
+                      <p className="text-sm text-gray-300 md:text-base">
                         {eventData.description}
                       </p>
                     )}
@@ -292,7 +308,11 @@ const EventDetail = () => {
                     onClick={handleBetYes}
                   >
                     {eventData.options.A}
-                    <img src={Up || "/placeholder.svg"} alt="Option A icon" className="w-4 h-4" />
+                    <img
+                      src={Up || "/placeholder.svg"}
+                      alt="Option A icon"
+                      className="w-4 h-4"
+                    />
                   </button>
 
                   <button
@@ -300,16 +320,29 @@ const EventDetail = () => {
                     onClick={handleBetNo}
                   >
                     {eventData.options.B}
-                    <img src={Down || "/placeholder.svg"} alt="Option B icon" className="w-4 h-4" />
+                    <img
+                      src={Down || "/placeholder.svg"}
+                      alt="Option B icon"
+                      className="w-4 h-4"
+                    />
                   </button>
                 </div>
 
                 {/* Event Stats */}
                 <div className="flex items-center justify-between text-sm text-gray-400">
                   <div className="flex items-center gap-2">
-                    <img src={getTokenIcon(eventData.tokenAddress)} alt="token icon" className="w-4 h-4" />
+                    <img
+                      src={getTokenIcon(eventData.tokenAddress)}
+                      alt="token icon"
+                      className="w-4 h-4"
+                    />
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00FFFF] to-[#27FE60]">
-                      Volume: {formatVolume(eventData.yes_votes + eventData.no_votes, eventData.tokenAddress)} {getTokenSymbol(eventData.tokenAddress)}
+                      Volume:{" "}
+                      {formatVolume(
+                        eventData.yes_votes + eventData.no_votes,
+                        eventData.tokenAddress
+                      )}{" "}
+                      {getTokenSymbol(eventData.tokenAddress)}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -327,26 +360,36 @@ const EventDetail = () => {
                       onClick={() => console.log("Event shared successfully!")}
                     >
                       <button className="flex items-center justify-center p-2 hover:bg-[#1A1F3F] rounded-full transition-colors">
-                        <img src={Share || "/placeholder.svg"} alt="share icon" className="w-4 h-4" />
+                        <img
+                          src={Share || "/placeholder.svg"}
+                          alt="share icon"
+                          className="w-4 h-4"
+                        />
                       </button>
                     </RWebShare>
                   </div>
                 </div>
 
                 {/* Category and Contract Info */}
-                <div className="mt-6 pt-4 border-t border-gray-700">
+                <div className="pt-4 mt-6 border-t border-gray-700">
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <span className="text-gray-400">Category:</span>
-                      <p className="text-white">{eventData.category?.label || "Unknown"}</p>
+                      <p className="text-white">
+                        {eventData.category?.label || "Unknown"}
+                      </p>
                     </div>
                     <div>
                       <span className="text-gray-400">Event Type:</span>
-                      <p className="text-white capitalize">{eventData.eventType || "Binary"}</p>
+                      <p className="text-white capitalize">
+                        {eventData.eventType || "Binary"}
+                      </p>
                     </div>
                     <div className="col-span-2">
                       <span className="text-gray-400">Contract:</span>
-                      <p className="text-white font-mono text-xs break-all">{eventData.address}</p>
+                      <p className="font-mono text-xs text-white break-all">
+                        {eventData.address}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -358,32 +401,39 @@ const EventDetail = () => {
 
       {/* Info Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-gray-800 bg-opacity-75 flex justify-center items-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-800 bg-opacity-75">
           <div className="bg-[#1A1F3F] p-6 rounded-lg w-full max-w-md md:max-w-lg lg:max-w-xl">
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg md:text-xl lg:text-2xl text-white font-bold">Event Details</h2>
-              <button 
-                className="text-white text-xl md:text-2xl hover:text-cyan-400" 
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-white md:text-xl lg:text-2xl">
+                Event Details
+              </h2>
+              <button
+                className="text-xl text-white md:text-2xl hover:text-cyan-400"
                 onClick={() => setShowModal(false)}
               >
                 &times;
               </button>
             </div>
-            <div className="mt-4 text-white text-sm md:text-base">
+            <div className="mt-4 text-sm text-white md:text-base">
               <p className="mb-2">
                 <strong>Question:</strong> {eventData.question}
               </p>
               <p className="mb-2">
-                <strong>Description:</strong> {eventData.description || "No additional information available."}
+                <strong>Description:</strong>{" "}
+                {eventData.description ||
+                  "No additional information available."}
               </p>
               <p className="mb-2">
-                <strong>Category:</strong> {eventData.category?.label || "Unknown"}
+                <strong>Category:</strong>{" "}
+                {eventData.category?.label || "Unknown"}
               </p>
               <p className="mb-2">
-                <strong>End Date:</strong> {new Date(eventData.end_time).toLocaleString()}
+                <strong>End Date:</strong>{" "}
+                {new Date(eventData.end_time).toLocaleString()}
               </p>
               <p className="mb-2">
-                <strong>Time Remaining:</strong> {formatTimeRemaining(eventData.end_time)}
+                <strong>Time Remaining:</strong>{" "}
+                {formatTimeRemaining(eventData.end_time)}
               </p>
               <p className="mb-2">
                 <strong>Contract Address:</strong> {eventData.address}
@@ -396,22 +446,39 @@ const EventDetail = () => {
                   <div className="flex-1 bg-[#51cddd20] text-[#18DDF7] py-2 px-4 rounded-lg">
                     <div className="text-center">
                       <div className="font-semibold">{eventData.options.A}</div>
-                      <div className="text-xs">{formatVolume(eventData.yes_votes, eventData.tokenAddress)} {getTokenSymbol(eventData.tokenAddress)}</div>
+                      <div className="text-xs">
+                        {formatVolume(
+                          eventData.yes_votes,
+                          eventData.tokenAddress
+                        )}{" "}
+                        {getTokenSymbol(eventData.tokenAddress)}
+                      </div>
                     </div>
                   </div>
                   <div className="flex-1 bg-[#ff5a5a20] text-[#FF5A5A] py-2 px-4 rounded-lg">
                     <div className="text-center">
                       <div className="font-semibold">{eventData.options.B}</div>
-                      <div className="text-xs">{formatVolume(eventData.no_votes, eventData.tokenAddress)} {getTokenSymbol(eventData.tokenAddress)}</div>
+                      <div className="text-xs">
+                        {formatVolume(
+                          eventData.no_votes,
+                          eventData.tokenAddress
+                        )}{" "}
+                        {getTokenSymbol(eventData.tokenAddress)}
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div className="mt-2 text-center text-xs text-gray-400">
-                  Total Volume: {formatVolume(eventData.yes_votes + eventData.no_votes, eventData.tokenAddress)} {getTokenSymbol(eventData.tokenAddress)}
+                <div className="mt-2 text-xs text-center text-gray-400">
+                  Total Volume:{" "}
+                  {formatVolume(
+                    eventData.yes_votes + eventData.no_votes,
+                    eventData.tokenAddress
+                  )}{" "}
+                  {getTokenSymbol(eventData.tokenAddress)}
                 </div>
               </div>
             </div>
-            <div className="mt-6 flex justify-end">
+            <div className="flex justify-end mt-6">
               <button
                 className="px-4 py-2 bg-cyan-500 text-[#09113B] rounded-lg hover:bg-cyan-400 transition-colors"
                 onClick={() => setShowModal(false)}
@@ -423,7 +490,7 @@ const EventDetail = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default EventDetail
+export default EventDetail;

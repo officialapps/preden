@@ -6,16 +6,13 @@ const HeaderBar = ({ title, onClose }) => {
     <div className="bg-[#09113B] px-4 py-3 flex items-center justify-between">
       <div className="flex items-center gap-2">
         {onClose && (
-          <X
-            className="text-white w-5 h-5 cursor-pointer"
-            onClick={onClose}
-          />
+          <X className="w-5 h-5 text-white cursor-pointer" onClick={onClose} />
         )}
-        <span className="text-white font-medium">{title || "STIM App"}</span>
+        <span className="font-medium text-white">{title || "PREDEN App"}</span>
       </div>
       <div className="flex gap-3">
-        <ChevronDown className="text-white w-5 h-5" />
-        <MoreVertical className="text-white w-5 h-5" />
+        <ChevronDown className="w-5 h-5 text-white" />
+        <MoreVertical className="w-5 h-5 text-white" />
       </div>
     </div>
   );

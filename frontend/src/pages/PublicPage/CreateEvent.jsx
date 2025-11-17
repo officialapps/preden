@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   useAccount,
   useChainId,
@@ -8,30 +8,30 @@ import {
   useWaitForTransactionReceipt,
   useReadContract,
   useBalance,
-} from "wagmi"
-import { readContract } from "wagmi/actions"
-import { toast } from "react-toastify"
-import { isAddress, formatUnits, parseUnits } from "viem"
-import Flames from "../../assets/images/svgs/flames.svg"
-import USDT from "../../assets/images/svgs/USDT.svg"
-import USDC from "../../assets/images/svgs/USDC.svg"
-import STIM from "../../assets/images/svgs/stim-coin.svg"
-import { base } from "wagmi/chains"
+} from "wagmi";
+import { readContract } from "wagmi/actions";
+import { toast } from "react-toastify";
+import { isAddress, formatUnits, parseUnits } from "viem";
+import Flames from "../../assets/images/svgs/flames.svg";
+import USDT from "../../assets/images/svgs/USDT.svg";
+import USDC from "../../assets/images/svgs/USDC.svg";
+import STIM from "../../assets/images/svgs/stim-coin.svg";
+import { bscTestnet } from "wagmi/chains";
 
 // Components
-import StepsIndicator from "../../components/StepsIndicator"
-import FormNavigation from "../../components/FormNavigation"
-import FAQSection from "../../components/FAQSection"
-import EventDetailsForm from "../../components/forms/EventDetailsForm"
-import CategoryTypeForm from "../../components/forms/CategoryTypeForm"
-import TimeTokenForm from "../../components/forms/TimeTokenForm"
+import StepsIndicator from "../../components/StepsIndicator";
+import FormNavigation from "../../components/FormNavigation";
+import FAQSection from "../../components/FAQSection";
+import EventDetailsForm from "../../components/forms/EventDetailsForm";
+import CategoryTypeForm from "../../components/forms/CategoryTypeForm";
+import TimeTokenForm from "../../components/forms/TimeTokenForm";
 
 // Constants - UPDATED TO MAINNET FACTORY ADDRESS
-import { getChainName } from "../../utils/chainUtils"
-import stakingABI from "../../deployedContract/abi/STIMPVP.json"
+import { getChainName } from "../../utils/chainUtils";
+import stakingABI from "../../deployedContract/abi/Preden.json";
 
-// UPDATED TO MAINNET FACTORY CONTRACT ADDRESS
-const MAINNET_FACTORY_ADDRESS = "0x00a971e86D76C7a7374e42C952e31a1E6186A603"
+// Factory contract address
+const MAINNET_FACTORY_ADDRESS = import.meta.env.VITE_FACTORY_ADDRESS || import.meta.env.REACT_APP_PVP_CONTRACT_ADDRESS;
 
 // ERC20 ABI for token approval
 const ERC20_ABI = [
@@ -77,74 +77,94 @@ const ERC20_ABI = [
     stateMutability: "view",
     type: "function",
   },
-]
+];
 
-// Token configuration - UPDATED TO MAINNET ADDRESSES
+// Token configuration
 const STAKING_TOKENS = [
-  { address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", symbol: "USDC", icon: USDC, decimals: 6 },
-  { address: "0x035d2026d6ab320150F9B0456D426D5CDdF8423F", symbol: "STIM", icon: STIM, decimals: 18 },
-]
+  {
+    address: import.meta.env.VITE_USDC_ADDRESS,
+    symbol: "USDC",
+    icon: USDC,
+    decimals: 6,
+  },
+  {
+    address: import.meta.env.VITE_USDT_ADDRESS,
+    symbol: "USDT",
+    icon: USDT,
+    decimals: 18,
+  },
+];
 
-// STIM token address for creator fees (always STIM)
-const CREATOR_FEE_TOKEN = "0x035d2026d6ab320150F9B0456D426D5CDdF8423F"
+// USDT token address for creator fees (always USDT)
+const CREATOR_FEE_TOKEN = import.meta.env.VITE_USDT_ADDRESS;
 
 // Define supported networks
-const SUPPORTED_NETWORKS = [8453] 
+const SUPPORTED_NETWORKS = [97];
 
 const CreateEvent = () => {
-  const navigate = useNavigate()
-  const { isConnected, address } = useAccount()
-  const chainId = useChainId()
-  const config = useConfig()
+  const navigate = useNavigate();
+  const { isConnected, address } = useAccount();
+  const chainId = useChainId();
+  const config = useConfig();
 
   // Get ETH balance for gas fee checks
   const { data: ethBalance } = useBalance({
     address: address,
     enabled: !!address,
-  })
+  });
 
   // Get chain info
-  const chain = config.chains.find((c) => c.id === chainId) || { id: chainId, name: "Unknown" }
+  const chain = config.chains.find((c) => c.id === chainId) || {
+    id: chainId,
+    name: "Unknown",
+  };
 
-  const [step, setStep] = useState(1)
+  const [step, setStep] = useState(1);
   const [transactionState, setTransactionState] = useState({
     loading: false,
     currentStep: null,
     error: null,
-  })
-  const [formError, setFormError] = useState("")
-  const [showTokenDropdown, setShowTokenDropdown] = useState(false)
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
-  const [showInfoTooltip, setShowInfoTooltip] = useState({})
-  const [categoryList, setCategoryList] = useState([])
-  const [isUsingFallbackData, setIsUsingFallbackData] = useState(false)
-  const [currentChainName, setCurrentChainName] = useState("")
-  const [hasTokenApproval, setHasTokenApproval] = useState(false)
-  const [networkChanged, setNetworkChanged] = useState(false)
-  const [allowedTokens, setAllowedTokens] = useState([])
+  });
+  const [formError, setFormError] = useState("");
+  const [showTokenDropdown, setShowTokenDropdown] = useState(false);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [showInfoTooltip, setShowInfoTooltip] = useState({});
+  const [categoryList, setCategoryList] = useState([]);
+  const [isUsingFallbackData, setIsUsingFallbackData] = useState(false);
+  const [currentChainName, setCurrentChainName] = useState("");
+  const [hasTokenApproval, setHasTokenApproval] = useState(false);
+  const [networkChanged, setNetworkChanged] = useState(false);
+  const [allowedTokens, setAllowedTokens] = useState([]);
 
   // Check if current user is an admin - UPDATED TO USE MAINNET FACTORY
   const { data: isAdmin, refetch: refetchAdminStatus } = useReadContract({
     address: MAINNET_FACTORY_ADDRESS,
     abi: stakingABI,
     functionName: "hasRole",
-    args: ["0xa49807205ce4d355092ef5a8a18f56e8913cf4a201fbe287825b095693c21775", address],
-    enabled: !!address && chainId === base.id,
-  })
+    args: [
+      import.meta.env.VITE_ADMIN_ROLE_HASH,
+      address,
+    ],
+    enabled: !!address && chainId === bscTestnet.id,
+  });
 
   // Check if current user is a moderator - UPDATED TO USE MAINNET FACTORY
-  const { data: isModerator, refetch: refetchModeratorStatus } = useReadContract({
-    address: MAINNET_FACTORY_ADDRESS,
-    abi: stakingABI,
-    functionName: "hasRole", 
-    args: ["0x797669c9492c21432e0b6d25e0a564a9c709ee7b1198e1fd1ba07c90b5c3d", address],
-    enabled: !!address && chainId === base.id,
-  })
+  const { data: isModerator, refetch: refetchModeratorStatus } =
+    useReadContract({
+      address: MAINNET_FACTORY_ADDRESS,
+      abi: stakingABI,
+      functionName: "hasRole",
+      args: [
+        import.meta.env.VITE_MODERATOR_ROLE_HASH,
+        address,
+      ],
+      enabled: !!address && chainId === bscTestnet.id,
+    });
 
   // Determine if user is exempt from creator stake
-  const isAdminOrModerator = Boolean(isAdmin || isModerator)
+  const isAdminOrModerator = Boolean(isAdmin || isModerator);
 
-  // Form state - UPDATED TO USE STIM MAINNET AS DEFAULT
+  // Form state - UPDATED TO USE USDT MAINNET AS DEFAULT
   const [formData, setFormData] = useState({
     question: "",
     description: "",
@@ -153,8 +173,8 @@ const CreateEvent = () => {
     categoryId: "0",
     eventImage: "",
     endTime: "",
-    tokenAddress: "0x035d2026d6ab320150F9B0456D426D5CDdF8423F",
-  })
+    tokenAddress: "",
+  });
 
   // Contract read hooks - UPDATED TO USE MAINNET FACTORY
   const {
@@ -165,38 +185,22 @@ const CreateEvent = () => {
     address: MAINNET_FACTORY_ADDRESS,
     abi: stakingABI,
     functionName: "getAllCategories",
-    enabled: chainId === base.id,
-  })
-
-  const { data: stimTokenAddress } = useReadContract({
-    address: MAINNET_FACTORY_ADDRESS,
-    abi: stakingABI,
-    functionName: "stimToken",
-    enabled: chainId === base.id,
-  })
+    enabled: chainId === bscTestnet.id,
+  });
 
   const { data: creatorStakeAmount } = useReadContract({
     address: MAINNET_FACTORY_ADDRESS,
     abi: stakingABI,
     functionName: "creatorStakeAmount",
-    enabled: chainId === base.id,
-  })
+    enabled: chainId === bscTestnet.id,
+  });
 
   const { data: defaultCreatorFeePercentage } = useReadContract({
     address: MAINNET_FACTORY_ADDRESS,
     abi: stakingABI,
     functionName: "defaultCreatorFeePercentage",
-    enabled: chainId === base.id,
-  })
-
-  // Check STIM token balance for creator fee (separate from staking token)
-  const { data: stimTokenBalance } = useReadContract({
-    address: CREATOR_FEE_TOKEN,
-    abi: ERC20_ABI,
-    functionName: "balanceOf",
-    args: address ? [address] : undefined,
-    enabled: !!address && !isAdminOrModerator,
-  })
+    enabled: chainId === bscTestnet.id,
+  });
 
   // Check staking token balance (user's choice)
   const { data: stakingTokenBalance } = useReadContract({
@@ -204,8 +208,9 @@ const CreateEvent = () => {
     abi: ERC20_ABI,
     functionName: "balanceOf",
     args: address ? [address] : undefined,
-    enabled: !!address && !!formData.tokenAddress && isAddress(formData.tokenAddress),
-  })
+    enabled:
+      !!address && !!formData.tokenAddress && isAddress(formData.tokenAddress),
+  });
 
   // Check STIM token allowance for creator fee (separate from staking token)
   const { data: stimTokenAllowance, refetch: refetchStimAllowance } = useReadContract({
@@ -222,7 +227,7 @@ const CreateEvent = () => {
     abi: ERC20_ABI,
     functionName: "decimals",
     enabled: !!formData.tokenAddress && isAddress(formData.tokenAddress),
-  })
+  });
 
   // Token approval for STIM creator fee
   const {
@@ -243,21 +248,21 @@ const CreateEvent = () => {
     isPending: isCreateLoading,
     data: createEventHash,
     error: createEventError,
-  } = useWriteContract()
+  } = useWriteContract();
 
   // Wait for event creation transaction
   const { isSuccess: isCreateSuccess } = useWaitForTransactionReceipt({
     hash: createEventHash,
-  })
+  });
 
-  // Set up allowed staking tokens for Base mainnet
+  // Set up allowed staking tokens for BSC Testnet
   useEffect(() => {
-    if (chainId === base.id) {
-      setAllowedTokens(STAKING_TOKENS)
+    if (chainId === bscTestnet.id) {
+      setAllowedTokens(STAKING_TOKENS);
     } else {
-      setAllowedTokens(STAKING_TOKENS)
+      setAllowedTokens(STAKING_TOKENS);
     }
-  }, [chainId])
+  }, [chainId]);
 
   // Check STIM token allowance for creator fee
   useEffect(() => {
@@ -274,25 +279,25 @@ const CreateEvent = () => {
   // Track network changes
   useEffect(() => {
     if (chainId) {
-      const chainName = getChainName(chainId)
-      setCurrentChainName(chainName)
+      const chainName = getChainName(chainId);
+      setCurrentChainName(chainName);
 
       if (!transactionState.loading) {
-        setNetworkChanged(false)
+        setNetworkChanged(false);
       } else {
-        setNetworkChanged(true)
+        setNetworkChanged(true);
       }
     }
-  }, [chainId])
+  }, [chainId]);
 
   // Check supported network
   useEffect(() => {
     if (isConnected && chainId) {
-      if (chainId !== base.id) {
-        toast.warn("Please switch to Base mainnet")
+      if (chainId !== bscTestnet.id) {
+        toast.warn("Please switch to BSC Testnet");
       }
     }
-  }, [isConnected, chainId])
+  }, [isConnected, chainId]);
 
   // Process categories
   useEffect(() => {
@@ -302,29 +307,43 @@ const CreateEvent = () => {
         name: category?.name || `Category ${index}`,
         description: category?.description || "",
         active: category?.active !== false,
-      }))
+      }));
 
-      setCategoryList(formattedCategories)
-      setIsUsingFallbackData(false)
+      setCategoryList(formattedCategories);
+      setIsUsingFallbackData(false);
 
-      if (!formData.categoryId || Number(formData.categoryId) >= formattedCategories.length) {
+      if (
+        !formData.categoryId ||
+        Number(formData.categoryId) >= formattedCategories.length
+      ) {
         setFormData((prev) => ({
           ...prev,
           categoryId: "0",
-        }))
+        }));
       }
-    } else if (categoriesError || chainId !== base.id) {
+    } else if (categoriesError || chainId !== bscTestnet.id) {
+      console.log(categoriesError, categories)
       const mockCategories = [
-        { id: "0", name: "Sports", description: "Sports predictions", active: true },
-        { id: "1", name: "Crypto", description: "Cryptocurrency events", active: true },
-      ]
-      setCategoryList(mockCategories)
-      setIsUsingFallbackData(true)
-      if (chainId !== base.id) {
-        toast.warn("Using fallback categories - please switch to Base mainnet")
+        {
+          id: "0",
+          name: "Sports",
+          description: "Sports predictions",
+          active: true,
+        },
+        {
+          id: "1",
+          name: "Crypto",
+          description: "Cryptocurrency events",
+          active: true,
+        },
+      ];
+      setCategoryList(mockCategories);
+      setIsUsingFallbackData(true);
+      if (chainId !== bscTestnet.id) {
+        toast.warn("Using fallback categories - please switch to BSC Testnet");
       }
     }
-  }, [categories, categoriesError, chainId])
+  }, [categories, categoriesError, chainId]);
 
   // Handle STIM approval success
   useEffect(() => {
@@ -369,32 +388,40 @@ const CreateEvent = () => {
   // Handle create event errors
   useEffect(() => {
     if (createEventError) {
-      console.error("Create event error:", createEventError)
-      let errorMessage = "Event creation failed"
+      console.error("Create event error:", createEventError);
+      let errorMessage = "Event creation failed";
 
-      if (createEventError.message.includes("User rejected") || createEventError.message.includes("User denied")) {
-        errorMessage = "Event creation cancelled"
+      if (
+        createEventError.message.includes("User rejected") ||
+        createEventError.message.includes("User denied")
+      ) {
+        errorMessage = "Event creation cancelled";
       } else if (createEventError.message.includes("insufficient funds")) {
-        errorMessage = "Low ETH balance. You need ETH for gas fees."
-      } else if (createEventError.message.includes("gas required exceeds allowance")) {
-        errorMessage = "Low ETH balance. You need ETH for gas fees."
+        errorMessage = "Low ETH balance. You need ETH for gas fees.";
+      } else if (
+        createEventError.message.includes("gas required exceeds allowance")
+      ) {
+        errorMessage = "Low ETH balance. You need ETH for gas fees.";
       } else if (createEventError.message.includes("execution reverted")) {
-        errorMessage = "Transaction reverted - check your inputs and try again"
+        errorMessage = "Transaction reverted - check your inputs and try again";
       }
 
       setTransactionState({
         loading: false,
         currentStep: null,
         error: errorMessage,
-      })
-      
-      if (createEventError.message.includes("User rejected") || createEventError.message.includes("User denied")) {
-        toast.info(errorMessage)
+      });
+
+      if (
+        createEventError.message.includes("User rejected") ||
+        createEventError.message.includes("User denied")
+      ) {
+        toast.info(errorMessage);
       } else {
-        toast.error(errorMessage)
+        toast.error(errorMessage);
       }
     }
-  }, [createEventError])
+  }, [createEventError]);
 
   // Handle successful event creation
   useEffect(() => {
@@ -404,7 +431,9 @@ const CreateEvent = () => {
         address: MAINNET_FACTORY_ADDRESS,
         question: formData.question,
         category: {
-          name: categoryList.find((cat) => cat.id === formData.categoryId)?.name || "General",
+          name:
+            categoryList.find((cat) => cat.id === formData.categoryId)?.name ||
+            "General",
           id: formData.categoryId,
         },
         options: {
@@ -413,178 +442,107 @@ const CreateEvent = () => {
         },
         end_time: formData.endTime,
         additional_info: formData.description,
-      }
+      };
 
-      toast.success("Event created successfully!")
-      navigate("/predict")
+      toast.success("Event created successfully!");
+      navigate("/predict");
       setTransactionState({
         loading: false,
         currentStep: null,
         error: null,
-      })
+      });
     }
-  }, [isCreateSuccess, navigate, formData, categoryList])
+  }, [isCreateSuccess, navigate, formData, categoryList]);
 
   // Handle form input changes
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData({ ...formData, [name]: value })
-  }
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
 
   // Handle options changes
   const handleOptionChange = (index, value) => {
-    const newOptions = [...formData.options]
-    newOptions[index] = value
-    setFormData({ ...formData, options: newOptions })
-  }
+    const newOptions = [...formData.options];
+    newOptions[index] = value;
+    setFormData({ ...formData, options: newOptions });
+  };
 
   // Add option
   const addOption = () => {
     if (formData.options.length < 10) {
-      setFormData({ ...formData, options: [...formData.options, ""] })
+      setFormData({ ...formData, options: [...formData.options, ""] });
     }
-  }
+  };
 
   // Remove option
   const removeOption = (index) => {
     if (formData.options.length > 2) {
-      const newOptions = formData.options.filter((_, i) => i !== index)
-      setFormData({ ...formData, options: newOptions })
+      const newOptions = formData.options.filter((_, i) => i !== index);
+      setFormData({ ...formData, options: newOptions });
     }
-  }
+  };
 
   // Handle category selection
   const handleCategorySelect = (categoryId) => {
-    const numericCategoryId = Number(categoryId)
+    const numericCategoryId = Number(categoryId);
     if (isNaN(numericCategoryId) || numericCategoryId >= categoryList.length) {
-      toast.warn("Invalid category ID. Using default category.")
-      setFormData({ ...formData, categoryId: "0" })
+      toast.warn("Invalid category ID. Using default category.");
+      setFormData({ ...formData, categoryId: "0" });
     } else {
-      setFormData({ ...formData, categoryId: categoryId })
+      setFormData({ ...formData, categoryId: categoryId });
     }
-    setShowCategoryDropdown(false)
-  }
+    setShowCategoryDropdown(false);
+  };
 
   // Handle staking token selection
   const handleTokenSelect = (tokenAddress) => {
-    setFormData({ ...formData, tokenAddress })
-    setShowTokenDropdown(false)
-  }
+    setFormData({ ...formData, tokenAddress });
+    setShowTokenDropdown(false);
+  };
 
   // Get category name
   const getCategoryName = (id) => {
-    const category = categoryList.find((cat) => cat.id === id)
-    return category ? category.name : "Select Category"
-  }
+    const category = categoryList.find((cat) => cat.id === id);
+    return category ? category.name : "Select Category";
+  };
 
   // Get token info for staking tokens
   const getTokenInfo = (address) => {
-    return allowedTokens.find((token) => token.address === address)
-  }
+    return allowedTokens.find((token) => token.address === address);
+  };
 
   // Toggle info tooltip
   const toggleInfoTooltip = (key) => {
     setShowInfoTooltip({
       ...showInfoTooltip,
       [key]: !showInfoTooltip[key],
-    })
-  }
-
-  // STIM token approval for creator fee
-  const handleStimTokenApproval = async () => {
-    if (isAdminOrModerator) {
-      return true
-    }
-
-    if (!creatorStakeAmount) {
-      toast.error("Missing creator stake amount")
-      return false
-    }
-
-    if (!ethBalance || parseFloat(formatUnits(ethBalance.value, 18)) < 0.001) {
-      toast.error("Low ETH balance. You need ETH for gas fees.")
-      setFormError("Low ETH balance. You need ETH for gas fees.")
-      return false
-    }
-
-    if (!stimTokenBalance || BigInt(stimTokenBalance) < BigInt(creatorStakeAmount)) {
-      const requiredAmount = formatUnits(BigInt(creatorStakeAmount), 18)
-      const currentBalance = formatUnits(BigInt(stimTokenBalance || 0), 18)
-      
-      toast.error(`Insufficient STIM balance for creator fee. Required: ${requiredAmount} STIM, You have: ${currentBalance} STIM`)
-      setFormError(`Insufficient STIM balance for creator fee`)
-      return false
-    }
-
-    try {
-      setTransactionState({
-        loading: true,
-        currentStep: "approval",
-        error: null,
-      })
-
-      setNetworkChanged(false)
-
-      toast.info("Approving STIM tokens for creator fee...")
-
-      await approveStimToken({
-        address: CREATOR_FEE_TOKEN,
-        abi: ERC20_ABI,
-        functionName: "approve",
-        args: [MAINNET_FACTORY_ADDRESS, BigInt(creatorStakeAmount)],
-        gas: 100000n, 
-      })
-
-      return true
-    } catch (error) {
-      console.error("STIM creator fee approval error:", error)
-      let errorMessage = "STIM creator fee approval failed"
-
-      if (error.message.includes("insufficient funds")) {
-        errorMessage = "Low ETH balance. You need ETH for gas fees."
-      } else if (error.message.includes("gas required exceeds allowance")) {
-        errorMessage = "Low ETH balance. You need ETH for gas fees."
-      } else if (error.message.includes("User rejected") || error.message.includes("User denied")) {
-        errorMessage = "STIM creator fee approval cancelled"
-      }
-
-      setTransactionState({
-        loading: false,
-        currentStep: null,
-        error: errorMessage,
-      })
-
-      if (error.message.includes("User rejected") || error.message.includes("User denied")) {
-        toast.info(errorMessage)
-      } else {
-        toast.error(errorMessage)
-      }
-      return false
-    }
-  }
+    });
+  };
 
   // Handle event creation
   const handleEventCreation = async () => {
     try {
-      const numericCategoryId = Number(formData.categoryId)
+      const numericCategoryId = Number(formData.categoryId);
 
       if (isNaN(numericCategoryId)) {
-        throw new Error("Invalid category selected")
+        throw new Error("Invalid category selected");
       }
 
       if (!isAddress(formData.tokenAddress)) {
-        throw new Error("Invalid staking token address")
+        throw new Error("Invalid staking token address");
       }
 
       setTransactionState({
         loading: true,
         currentStep: "creating",
         error: null,
-      })
+      });
 
-      toast.info("Creating event...")
+      toast.info("Creating event...");
 
-      const endTimeUnix = Math.floor(new Date(formData.endTime).getTime() / 1000)
+      const endTimeUnix = Math.floor(
+        new Date(formData.endTime).getTime() / 1000
+      );
 
       await createEvent({
         address: MAINNET_FACTORY_ADDRESS,
@@ -600,188 +558,199 @@ const CreateEvent = () => {
           endTimeUnix,
           formData.tokenAddress,
         ],
-        gas: 2000000n, 
-      })
+        gas: 2000000n,
+      });
     } catch (error) {
-      console.error("Event creation failed:", error)
-      let errorMessage = "Event creation failed"
+      console.error("Event creation failed:", error);
+      let errorMessage = "Event creation failed";
 
-      if (error.message.includes("User rejected") || error.message.includes("User denied")) {
-        errorMessage = "Event creation cancelled"
+      if (
+        error.message.includes("User rejected") ||
+        error.message.includes("User denied")
+      ) {
+        errorMessage = "Event creation cancelled";
       } else if (error.message.includes("insufficient funds")) {
-        errorMessage = "Low ETH balance. You need ETH for gas fees."
+        errorMessage = "Low ETH balance. You need ETH for gas fees.";
       } else if (error.message.includes("gas required exceeds allowance")) {
-        errorMessage = "Low ETH balance. You need ETH for gas fees."
+        errorMessage = "Low ETH balance. You need ETH for gas fees.";
       } else {
-        errorMessage = `Event creation failed: ${error.message}`
+        errorMessage = `Event creation failed: ${error.message}`;
       }
 
-      setFormError(errorMessage)
+      setFormError(errorMessage);
       setTransactionState({
         loading: false,
         currentStep: null,
         error: errorMessage,
-      })
-      
-      if (error.message.includes("User rejected") || error.message.includes("User denied")) {
-        toast.info(errorMessage)
+      });
+
+      if (
+        error.message.includes("User rejected") ||
+        error.message.includes("User denied")
+      ) {
+        toast.info(errorMessage);
       } else {
-        toast.error(errorMessage)
+        toast.error(errorMessage);
       }
     }
-  }
+  };
 
   // Unified transaction handler
   const handleTransaction = async (e) => {
-    e.preventDefault()
-    setFormError("")
+    e.preventDefault();
+    setFormError("");
 
     if (!isConnected) {
-      setFormError("Please connect your wallet first")
-      toast.error("Wallet not connected")
-      return
+      setFormError("Please connect your wallet first");
+      toast.error("Wallet not connected");
+      return;
     }
 
-    if (chainId !== base.id) {
-      setFormError("Please switch to Base mainnet")
-      toast.error("Please switch to Base mainnet")
-      return
+    if (chainId !== bscTestnet.id) {
+      setFormError("Please switch to BSC Testnet");
+      toast.error("Please switch to BSC Testnet");
+      return;
     }
 
     // Validation
-    const validationErrors = []
-    if (!formData.question.trim()) validationErrors.push("Question is required")
-    if (!formData.description.trim()) validationErrors.push("Description is required")
-    if (formData.options.some((opt) => !opt.trim())) validationErrors.push("All options must have a value")
-    if (!formData.endTime) validationErrors.push("End time is required")
-    if (!formData.tokenAddress) validationErrors.push("Please select a staking token")
+    const validationErrors = [];
+    if (!formData.question.trim())
+      validationErrors.push("Question is required");
+    if (!formData.description.trim())
+      validationErrors.push("Description is required");
+    if (formData.options.some((opt) => !opt.trim()))
+      validationErrors.push("All options must have a value");
+    if (!formData.endTime) validationErrors.push("End time is required");
+    if (!formData.tokenAddress)
+      validationErrors.push("Please select a staking token");
 
-    const isValidStakingToken = STAKING_TOKENS.some(token => token.address === formData.tokenAddress)
+    const isValidStakingToken = STAKING_TOKENS.some(
+      (token) => token.address === formData.tokenAddress
+    );
     if (!isValidStakingToken) {
-      validationErrors.push("Please select a valid staking token (USDC or STIM)")
+      validationErrors.push(
+        "Please select a valid staking token (USDC or USDT)"
+      );
     }
 
-    const endTime = new Date(formData.endTime)
-    const now = new Date()
+    const endTime = new Date(formData.endTime);
+    const now = new Date();
     if (endTime <= now) {
-      validationErrors.push("End time must be in the future")
+      validationErrors.push("End time must be in the future");
     }
 
     if (validationErrors.length > 0) {
-      setFormError(validationErrors[0])
-      return
+      setFormError(validationErrors[0]);
+      return;
     }
 
     try {
-      setNetworkChanged(false)
+      setNetworkChanged(false);
 
-      if (isAdminOrModerator || hasTokenApproval) {
-        await handleEventCreation()
-      } else {
-        await handleStimTokenApproval()
-      }
+      await handleEventCreation();
     } catch (error) {
-      console.error("Transaction process failed:", error)
-      setFormError(error.message)
+      console.error("Transaction process failed:", error);
+      setFormError(error.message);
     }
-  }
+  };
 
   // Navigation functions
   const goToNextStep = () => {
     if (step === 1) {
-      const validationErrors = []
-      if (!formData.question.trim()) validationErrors.push("Question is required")
-      if (!formData.description.trim()) validationErrors.push("Description is required")
-      if (formData.options.some((opt) => !opt.trim())) validationErrors.push("All options must have a value")
+      const validationErrors = [];
+      if (!formData.question.trim())
+        validationErrors.push("Question is required");
+      if (!formData.description.trim())
+        validationErrors.push("Description is required");
+      if (formData.options.some((opt) => !opt.trim()))
+        validationErrors.push("All options must have a value");
 
       if (validationErrors.length > 0) {
-        setFormError(validationErrors[0])
-        return
+        setFormError(validationErrors[0]);
+        return;
       }
     }
-    setFormError("")
-    setStep(step + 1)
-  }
+    setFormError("");
+    setStep(step + 1);
+  };
 
   const goToPrevStep = () => {
-    setFormError("")
-    setStep(step - 1)
-  }
+    setFormError("");
+    setStep(step - 1);
+  };
 
   // Get button text based on current transaction state and admin status
   const getButtonText = () => {
-    const { loading, currentStep } = transactionState
+    const { loading, currentStep } = transactionState;
 
     if (loading) {
-      if (currentStep === "approval") return "Approving STIM for Creator Fee..."
-      if (currentStep === "creating") return "Creating Event..."
-      return "Processing..."
+      if (currentStep === "creating") return "Creating Event...";
+      return "Processing...";
     }
 
-    if (isStimApprovalLoading || isCreateLoading) return "Confirming Transaction..."
+    if (isCreateLoading) return "Confirming Transaction...";
 
-    if (isAdminOrModerator) {
-      return "Create Event (No Fee Required)"
-    }
-
-    if (!hasTokenApproval) {
-      return "Approve STIM Fee & Create Event"
-    }
-
-    return "Create Event"
-  }
+    return "Create Event";
+  };
 
   // Format stake amount for display
   const formatStakeAmount = (amount) => {
-    if (!amount) return "Loading..."
-    
+    if (!amount) return "Loading...";
+
     try {
-      const formatted = formatUnits(BigInt(amount), 18)
-      return parseFloat(formatted).toLocaleString()
+      const formatted = formatUnits(BigInt(amount), 18);
+      return parseFloat(formatted).toLocaleString();
     } catch (error) {
-      console.error("Error formatting stake amount:", error)
-      return "Loading..."
+      console.error("Error formatting stake amount:", error);
+      return "Loading...";
     }
-  }
+  };
 
   const formatFeePercentage = (percentage) => {
-    if (!percentage) return "Loading..."
-    return `${Number(percentage) / 100}%`
-  }
+    if (!percentage) return "Loading...";
+    return `${Number(percentage) / 100}%`;
+  };
 
   return (
-    <div className="relative p-4 md:p-6 lg:p-8 min-h-screen">
+    <div className="relative min-h-screen p-4 md:p-6 lg:p-8">
       <div className="fixed bottom-0 left-0 w-full h-[700px] md:h-screen -z-10">
-        <img src={Flames || "/placeholder.svg"} alt="background" className="w-full h-full object-cover" />
+        <img
+          src={Flames || "/placeholder.svg"}
+          alt="background"
+          className="object-cover w-full h-full"
+        />
       </div>
 
       <div className="relative z-0 max-w-screen-xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
-            <span className="text-lg md:text-xl lg:text-2xl font-semibold text-cyan-400">CREATE EVENT</span>
-            <div className="bg-green-500 bg-opacity-20 border border-green-500 text-green-300 px-2 py-1 rounded text-xs">
-              Base Mainnet
+            <span className="text-lg font-semibold md:text-xl lg:text-2xl text-cyan-400">
+              CREATE EVENT
+            </span>
+            <div className="px-2 py-1 text-xs text-green-300 bg-green-500 border border-green-500 rounded bg-opacity-20">
+              BSC Testnet
             </div>
           </div>
           <button
             onClick={() => navigate(-1)}
-            className="px-3 py-1 text-cyan-400 border border-cyan-400 rounded-lg hover:bg-cyan-900 hover:bg-opacity-20 transition-colors"
+            className="px-3 py-1 transition-colors border rounded-lg text-cyan-400 border-cyan-400 hover:bg-cyan-900 hover:bg-opacity-20"
           >
             Back
           </button>
         </div>
 
         {isConnected && isAdminOrModerator && (
-          <div className="bg-green-500 bg-opacity-20 border border-green-500 text-green-300 p-3 rounded-lg mb-6">
+          <div className="p-3 mb-6 text-green-300 bg-green-500 border border-green-500 rounded-lg bg-opacity-20">
             <p className="font-medium">
-              {isAdmin ? 'Admin' : 'Moderator'} Account Detected
+              {isAdmin ? "Admin" : "Moderator"} Account Detected
               <br />
-              You can create events without paying the creator fee in STIM tokens!
+              You can create events without paying the creator fee in Preden
+              tokens!
             </p>
           </div>
         )}
 
-        {isConnected && !isAdminOrModerator && stimTokenBalance && creatorStakeAmount && BigInt(stimTokenBalance) < BigInt(creatorStakeAmount) && (
+        {/*isConnected && !isAdminOrModerator && stimTokenBalance && creatorStakeAmount && BigInt(stimTokenBalance) < BigInt(creatorStakeAmount) && (
           <div className="bg-red-500 bg-opacity-20 border border-red-500 text-red-300 p-3 rounded-lg mb-6">
             <p className="font-medium">
               Insufficient STIM balance for creator fee. 
@@ -790,12 +759,13 @@ const CreateEvent = () => {
               Your Balance: {formatUnits(BigInt(stimTokenBalance), 18)} STIM
             </p>
           </div>
-        )}
+        )*/}
 
         {isUsingFallbackData && (
-          <div className="bg-yellow-500 bg-opacity-20 border border-yellow-500 text-yellow-300 p-3 rounded-lg mb-6">
+          <div className="p-3 mb-6 text-yellow-300 bg-yellow-500 border border-yellow-500 rounded-lg bg-opacity-20">
             <p className="font-medium">
-              Using demo content for development. Please connect to the correct network for actual contract interaction.
+              Using demo content for development. Please connect to the correct
+              network for actual contract interaction.
             </p>
           </div>
         )}
@@ -810,13 +780,13 @@ const CreateEvent = () => {
             <StepsIndicator step={step} />
 
             {formError && (
-              <div className="bg-red-500 bg-opacity-20 border border-red-500 text-red-300 p-3 rounded-lg mb-4">
+              <div className="p-3 mb-4 text-red-300 bg-red-500 border border-red-500 rounded-lg bg-opacity-20">
                 <p className="font-medium">{formError}</p>
               </div>
             )}
 
             {transactionState.error && (
-              <div className="bg-red-500 bg-opacity-20 border border-red-500 text-red-300 p-3 rounded-lg mb-4">
+              <div className="p-3 mb-4 text-red-300 bg-red-500 border border-red-500 rounded-lg bg-opacity-20">
                 <p className="font-medium">Error: {transactionState.error}</p>
               </div>
             )}
@@ -833,7 +803,11 @@ const CreateEvent = () => {
                     toggleInfoTooltip={toggleInfoTooltip}
                     showInfoTooltip={showInfoTooltip}
                   />
-                  <FormNavigation step={step} goToNextStep={goToNextStep} isLastStep={false} />
+                  <FormNavigation
+                    step={step}
+                    goToNextStep={goToNextStep}
+                    isLastStep={false}
+                  />
                 </>
               )}
 
@@ -875,7 +849,9 @@ const CreateEvent = () => {
                     TOKENS={allowedTokens}
                     isSubmitting={transactionState.loading}
                     creatorStakeAmount={formatStakeAmount(creatorStakeAmount)}
-                    defaultCreatorFeePercentage={formatFeePercentage(defaultCreatorFeePercentage)}
+                    defaultCreatorFeePercentage={formatFeePercentage(
+                      defaultCreatorFeePercentage
+                    )}
                     isAdminOrModerator={isAdminOrModerator}
                   />
 
@@ -883,8 +859,8 @@ const CreateEvent = () => {
                     <button
                       type="button"
                       onClick={goToPrevStep}
-                      className="px-6 py-2 rounded-lg bg-transparent border border-white/20 text-white hover:bg-white/10 transition-colors"
-                      disabled={transactionState.loading || isStimApprovalLoading || isCreateLoading}
+                      className="px-6 py-2 text-white transition-colors bg-transparent border rounded-lg border-white/20 hover:bg-white/10"
+                      disabled={transactionState.loading || isCreateLoading}
                     >
                       Previous
                     </button>
@@ -892,7 +868,11 @@ const CreateEvent = () => {
                     <button
                       type="submit"
                       className="px-6 py-2 rounded-lg bg-[#195281] text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={transactionState.loading || isStimApprovalLoading || isCreateLoading || chainId !== base.id}
+                      disabled={
+                        transactionState.loading ||
+                        isCreateLoading ||
+                        chainId !== bscTestnet.id
+                      }
                     >
                       {getButtonText()}
                     </button>
@@ -906,7 +886,7 @@ const CreateEvent = () => {
         <FAQSection />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default CreateEvent
+export default CreateEvent;

@@ -1,12 +1,12 @@
 import React from "react";
 import { HelpCircle, ChevronDown, ChevronUp, Clock } from "lucide-react";
 
-const TimeTokenForm = ({ 
-  formData, 
-  handleChange, 
-  toggleInfoTooltip, 
-  showInfoTooltip, 
-  showTokenDropdown, 
+const TimeTokenForm = ({
+  formData,
+  handleChange,
+  toggleInfoTooltip,
+  showInfoTooltip,
+  showTokenDropdown,
   setShowTokenDropdown,
   getTokenInfo,
   handleTokenSelect,
@@ -14,31 +14,34 @@ const TimeTokenForm = ({
   isSubmitting,
   creatorStakeAmount = "Loading...",
   defaultCreatorFeePercentage = "Loading...",
-  isAdminOrModerator = false
+  isAdminOrModerator = false,
 }) => {
-  // Users can pick between USDC and STIM for staking
-  const allowedTokens = TOKENS.filter(token => 
-    token.symbol === "USDC" || token.symbol === "STIM"
+  // Users can pick between USDC and USDT for staking
+  const allowedTokens = TOKENS.filter(
+    (token) => token.symbol === "USDC" || token.symbol === "USDT"
   );
 
   const selectedToken = getTokenInfo(formData.tokenAddress);
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-white">Event Timeline & Token Settings</h2>
-      
+      <h2 className="text-xl font-semibold text-white">
+        Event Timeline & Token Settings
+      </h2>
+
       {/* End Time */}
       <div>
         <div className="flex items-center mb-2">
-          <label className="text-white font-medium">End Time</label>
+          <label className="font-medium text-white">End Time</label>
           <div className="relative ml-2">
-            <HelpCircle 
-              className="w-4 h-4 text-cyan-400 cursor-pointer" 
-              onClick={() => toggleInfoTooltip('endTime')}
+            <HelpCircle
+              className="w-4 h-4 cursor-pointer text-cyan-400"
+              onClick={() => toggleInfoTooltip("endTime")}
             />
             {showInfoTooltip.endTime && (
               <div className="absolute z-10 w-64 bg-[#1A1F3F] border border-cyan-700 p-3 rounded-lg text-sm text-white -right-2 top-6">
-                When staking closes and the event will be resolved. Users can stake immediately after event creation.
+                When staking closes and the event will be resolved. Users can
+                stake immediately after event creation.
               </div>
             )}
           </div>
@@ -52,51 +55,58 @@ const TimeTokenForm = ({
             min={new Date(Date.now() + 60000).toISOString().slice(0, 16)} // Minimum 1 minute from now
             className="w-full bg-[#1A1F3F] text-white border border-[#2A3052] rounded-lg p-3 placeholder-gray-500 focus:border-cyan-400 focus:outline-none"
           />
-          <Clock className="absolute right-3 top-3 text-gray-400" size={20} />
+          <Clock className="absolute text-gray-400 right-3 top-3" size={20} />
         </div>
       </div>
-      
-      {/* Staking Token Selection - Users can choose USDC or STIM for betting */}
+
+      {/* Staking Token Selection - Users can choose USDC or USDT for betting */}
       <div>
         <div className="flex items-center mb-2">
-          <label className="text-white font-medium">Staking Token</label>
+          <label className="font-medium text-white">Staking Token</label>
           <div className="relative ml-2">
-            <HelpCircle 
-              className="w-4 h-4 text-cyan-400 cursor-pointer" 
-              onClick={() => toggleInfoTooltip('token')}
+            <HelpCircle
+              className="w-4 h-4 cursor-pointer text-cyan-400"
+              onClick={() => toggleInfoTooltip("token")}
             />
             {showInfoTooltip.token && (
               <div className="absolute z-10 w-64 bg-[#1A1F3F] border border-cyan-700 p-3 rounded-lg text-sm text-white -right-2 top-6">
-                Select which token users will stake when betting on this event. You can choose between STIM and USDC. Note: The creator fee is always paid in STIM tokens regardless of your staking token choice.
+                Select which token users will stake when betting on this event.
+                You can choose between USDT and USDC. Note: The creator fee is
+                always paid in USDT tokens regardless of your staking token
+                choice.
               </div>
             )}
           </div>
         </div>
         <div className="relative">
-          <div 
+          <div
             className="w-full bg-[#1A1F3F] text-white border border-[#2A3052] rounded-lg p-3 flex items-center justify-between cursor-pointer hover:border-cyan-400 transition-colors"
             onClick={() => setShowTokenDropdown(!showTokenDropdown)}
           >
             {formData.tokenAddress && selectedToken ? (
               <div className="flex items-center gap-2">
-                <img 
-                  src={selectedToken.icon} 
-                  alt="token" 
-                  className="w-5 h-5" 
-                />
+                <img src={selectedToken.icon} alt="token" className="w-5 h-5" />
                 <div>
-                  <span className="text-white font-medium">{selectedToken.symbol}</span>
-                  <span className="text-gray-400 text-sm ml-2">
-                    {selectedToken.symbol === "STIM" ? "Stim Token" : "USD Coin"}
+                  <span className="font-medium text-white">
+                    {selectedToken.symbol}
+                  </span>
+                  <span className="ml-2 text-sm text-gray-400">
+                    {selectedToken.symbol === "USDT"
+                      ? "USDT Token"
+                      : "USD Coin"}
                   </span>
                 </div>
               </div>
             ) : (
               <span className="text-gray-400">Select Staking Token</span>
             )}
-            {showTokenDropdown ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            {showTokenDropdown ? (
+              <ChevronUp size={20} />
+            ) : (
+              <ChevronDown size={20} />
+            )}
           </div>
-          
+
           {showTokenDropdown && (
             <div className="absolute top-full left-0 w-full mt-1 bg-[#1A1F3F] border border-[#2A3052] rounded-lg z-20 max-h-48 overflow-y-auto shadow-lg">
               {allowedTokens.map((token) => (
@@ -105,15 +115,19 @@ const TimeTokenForm = ({
                   className="p-3 hover:bg-[#2A3052] cursor-pointer flex items-center gap-3 transition-colors first:rounded-t-lg last:rounded-b-lg"
                   onClick={() => handleTokenSelect(token.address)}
                 >
-                  <img src={token.icon} alt={token.symbol} className="w-5 h-5" />
+                  <img
+                    src={token.icon}
+                    alt={token.symbol}
+                    className="w-5 h-5"
+                  />
                   <div className="flex-1">
-                    <div className="text-white font-medium">{token.symbol}</div>
-                    <div className="text-gray-400 text-sm">
-                      {token.symbol === "STIM" ? "Stim Token" : "USD Coin"}
+                    <div className="font-medium text-white">{token.symbol}</div>
+                    <div className="text-sm text-gray-400">
+                      {token.symbol === "USDT" ? "USDT" : "USDC"}
                     </div>
                   </div>
                   {formData.tokenAddress === token.address && (
-                    <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                    <div className="w-2 h-2 rounded-full bg-cyan-400"></div>
                   )}
                 </div>
               ))}
@@ -125,43 +139,43 @@ const TimeTokenForm = ({
         </div>
       </div>
 
-      {/* Creator Fee Information - Always STIM */}
+      {/* Creator Fee Information - Always USDT */}
       <div className="bg-[#1A1F3F] border border-[#2A3052] rounded-lg p-4">
-        <h3 className="text-white font-medium mb-3 flex items-center gap-2">
+        {/*<h3 className="flex items-center gap-2 mb-3 font-medium text-white">
           Creator Fee Requirements
           <div className="relative">
-            <HelpCircle 
-              className="w-4 h-4 text-cyan-400 cursor-pointer" 
-              onClick={() => toggleInfoTooltip('requirements')}
+            <HelpCircle
+              className="w-4 h-4 cursor-pointer text-cyan-400"
+              onClick={() => toggleInfoTooltip("requirements")}
             />
             {showInfoTooltip.requirements && (
               <div className="absolute z-10 w-72 bg-[#1A1F3F] border border-cyan-700 p-3 rounded-lg text-sm text-white -right-2 top-6">
-                {isAdminOrModerator 
-                  ? "As an admin/moderator, you can create events without paying creator fees. No STIM tokens are required."
-                  : "To create an event, you must pay a creator fee in STIM tokens. This is separate from the staking token users will use to bet on your event. The fee helps maintain the platform."
-                }
+                {isAdminOrModerator
+                  ? "As an admin/moderator, you can create events without paying creator fees. No USDT tokens are required."
+                  : "To create an event, you must pay a creator fee in USDT tokens. This is separate from the staking token users will use to bet on your event. The fee helps maintain the platform."}
               </div>
             )}
           </div>
-        </h3>
-        
-        {isAdminOrModerator ? (
+        </h3>*/}
+
+        {/*isAdminOrModerator ? (
           // Admin/Moderator view
           <div className="space-y-2 text-sm text-gray-300">
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <span>Admin/Moderator Status:</span>
-              <span className="text-green-400 font-medium">✅ Verified</span>
+              <span className="font-medium text-green-400">✅ Verified</span>
             </div>
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <span>Creator Fee Required:</span>
-              <span className="text-green-400 font-medium">None (Exempt)</span>
+              <span className="font-medium text-green-400">None (Exempt)</span>
             </div>
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <span>Fee Token:</span>
-              <span className="text-green-400 font-medium">N/A</span>
+              <span className="font-medium text-green-400">N/A</span>
             </div>
             <div className="text-xs text-green-400 mt-2 p-2 bg-[#0B122E] rounded border border-green-500/20">
-              🎉 Admin/Moderator privileges: Create events instantly without any creator fees!
+              🎉 Admin/Moderator privileges: Create events instantly without any
+              creator fees!
             </div>
           </div>
         ) : (
@@ -169,38 +183,44 @@ const TimeTokenForm = ({
           <div className="space-y-2 text-sm text-gray-300">
             <div className="flex justify-between">
               <span>Creator Fee Amount:</span>
-              <span className="text-cyan-400 font-medium">
-                {creatorStakeAmount} STIM
+              <span className="font-medium text-cyan-400">
+                {creatorStakeAmount} USDT
               </span>
             </div>
             <div className="flex justify-between">
               <span>Fee Percentage:</span>
-              <span className="text-cyan-400 font-medium">{defaultCreatorFeePercentage}</span>
+              <span className="font-medium text-cyan-400">
+                {defaultCreatorFeePercentage}
+              </span>
             </div>
             <div className="flex justify-between">
               <span>Fee Token:</span>
-              <span className="text-orange-400 font-medium">STIM Only</span>
+              <span className="font-medium text-orange-400">USDT Only</span>
             </div>
             <div className="flex justify-between text-xs text-gray-500">
               <span>Staking Token:</span>
-              <span>{selectedToken?.symbol || "Not selected"} (For user betting)</span>
+              <span>
+                {selectedToken?.symbol || "Not selected"} (For user betting)
+              </span>
             </div>
             <div className="text-xs text-gray-400 mt-2 p-2 bg-[#0B122E] rounded border border-orange-500/20">
-              💡 <strong>Two separate tokens:</strong><br/>
-              • <strong>Creator fee:</strong> Always paid in STIM tokens (returned after resolution)<br/>
-              • <strong>User staking:</strong> Uses the token you selected above ({selectedToken?.symbol || "none selected"})
+              💡 <strong>Two separate tokens:</strong>
+              <br />• <strong>Creator fee:</strong> Always paid in USDT tokens
+              (returned after resolution)
+              <br />• <strong>User staking:</strong> Uses the token you selected
+              above ({selectedToken?.symbol || "none selected"})
             </div>
           </div>
-        )}
+        )*/}
       </div>
 
       {/* Event Image (Optional) */}
       {/* <div>
         <div className="flex items-center mb-2">
-          <label className="text-white font-medium">Event Image (Optional)</label>
+          <label className="font-medium text-white">Event Image (Optional)</label>
           <div className="relative ml-2">
-            <HelpCircle 
-              className="w-4 h-4 text-cyan-400 cursor-pointer" 
+            <HelpCircle
+              className="w-4 h-4 cursor-pointer text-cyan-400"
               onClick={() => toggleInfoTooltip('eventImage')}
             />
             {showInfoTooltip.eventImage && (
@@ -222,12 +242,11 @@ const TimeTokenForm = ({
 
       {/* Status Messages */}
       {isSubmitting && (
-        <div className="bg-blue-500 bg-opacity-20 border border-blue-500 text-blue-300 p-3 rounded-lg">
+        <div className="p-3 text-blue-300 bg-blue-500 border border-blue-500 rounded-lg bg-opacity-20">
           <p className="font-medium">
-            {isAdminOrModerator 
+            {isAdminOrModerator
               ? "Creating your event as admin/moderator... No creator fee required."
-              : "Creating your event... Please confirm the STIM creator fee transaction in your wallet."
-            }
+              : "Creating your event... Please confirm the USDT creator fee transaction in your wallet."}
           </p>
         </div>
       )}
